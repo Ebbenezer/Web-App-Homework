@@ -770,6 +770,11 @@
       color: #5d6c63;
     }
 
+    .status.unavailable {
+      background: #e8edeb;
+      color: #56645e;
+    }
+
     .selected-day-panel {
       padding: 20px;
     }
@@ -1190,7 +1195,7 @@
         </div>
       </div>
       <div>
-        <span class="mockup-pill">Stage 2 · Forecast connection</span>
+        <span class="mockup-pill">Stage 3 · Forecast calculations</span>
         <p class="topbar-note">Open-Meteo data enabled</p>
       </div>
     </header>
@@ -1316,11 +1321,11 @@
             <span class="mockup-pill">Planning inputs active</span>
           </div>
           <h1 id="page-title">Weather work window</h1>
-          <p class="intro-copy">Choose a jobsite and configure the project thresholds. Forecast data loads here; daily activity ratings will be added in Stage 3.</p>
+          <p class="intro-copy">Choose a jobsite and configure the project thresholds. The forecast is normalized and each activity is calculated from the exact hourly rules.</p>
           <div class="meta-row" aria-label="Forecast preview metadata">
             <span class="micro-pill">Open-Meteo forecast</span>
             <span class="micro-pill">7 local dates</span>
-            <span class="micro-pill">Ratings not calculated</span>
+            <span class="micro-pill">Calculations active</span>
           </div>
         </section>
 
@@ -1358,9 +1363,9 @@
             <div>
               <p class="eyebrow">Weekly activity outlook</p>
               <h2 id="week-heading">Activity ratings</h2>
-              <p>Local dates and per-activity ratings will populate in Stage 3.</p>
+              <p>Local dates and per-activity display rendering are reserved for Stage 4.</p>
             </div>
-            <span class="micro-pill">Calculations pending</span>
+            <span class="micro-pill">Calculations active</span>
           </div>
 
           <div class="week-grid" aria-label="Seven-day rating placeholders">
@@ -1379,7 +1384,7 @@
             <div>
               <p class="eyebrow">Activity details</p>
               <h2 id="selected-day-heading">Ratings follow in Stage 3</h2>
-              <p>Forecast retrieval is connected; rating calculations are not part of this stage.</p>
+              <p>Stage 3 calculations are connected; the selected-day activity UI is reserved for Stage 4.</p>
             </div>
             <span class="micro-pill">No sample ratings</span>
           </div>
@@ -1547,7 +1552,7 @@
 
         elements.thresholdMessage.textContent = errors.length
           ? errors.join(" ")
-          : "Thresholds are valid. Activity ratings will be calculated in Stage 3.";
+          : "Thresholds are valid. Activity calculations are active.";
         elements.thresholdMessage.classList.toggle("is-error", errors.length > 0);
         elements.thresholdMessage.classList.toggle("is-valid", errors.length === 0);
         return errors.length === 0;
@@ -1633,6 +1638,284 @@
         return { hourlyCount: hourly.time.length, missingValues };
       }
 
+      function formatLocalDateKey(date, timezone) {
+        const parts = new Intl.DateTimeFormat("en-US", {
+          timeZone: timezone,
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit"
+        }).formatToParts(date);
+        const values = {};
+        parts.forEach((part) => {
+          if (part.type !== "literal") {
+            values[part.type] = part.value;
+          }
+        });
+        return `${values.year}-${values.month}-${values.day}`;
+      }
+
+      function addCalendarDays(dateKey, offset) {
+        const [year, month, day] = dateKey.split("-").map(Number);
+        const date = new Date(Date.UTC(year, month - 1, day + offset));
+        return date.toISOString().slice(0, 10);
+      }
+
+      function formatLocalTimestamp(timestamp, timezone) {
+        return new Intl.DateTimeFormat("en-US", {
+          timeZone: timezone,
+          weekday: "short",
+          month: "short",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+          timeZoneName: "short"
+        }).format(new Date(timestamp));
+      }
+
+      function normalizedNumber(value) {
+        if (value === null || value === undefined || value === "") {
+          return null;
+        }
+        const number = Number(value);
+        return Number.isFinite(number) ? number : null;
+      }
+
+      function normalizeForecast(payload, now = new Date()) {
+        const timezone = payload.timezone;
+        const hourly = payload.hourly;
+        const todayKey = formatLocalDateKey(now, timezone);
+        const dateKeys = Array.from({ length: 7 }, (_, offset) => addCalendarDays(todayKey, offset));
+        const grouped = new Map(dateKeys.map((key) => [key, []]));
+        const nowMs = now.getTime();
+
+        for (let index = 0; index < hourly.time.length; index += 1) {
+          const unixSeconds = Number(hourly.time[index]);
+          if (!Number.isFinite(unixSeconds)) {
+            continue;
+          }
+          const timestamp = unixSeconds * 1000;
+          if (!Number.isFinite(timestamp)) {
+            continue;
+          }
+          const dateKey = formatLocalDateKey(new Date(timestamp), timezone);
+          if (!grouped.has(dateKey)) {
+            continue;
+          }
+          if (dateKey === todayKey && timestamp < nowMs) {
+            continue;
+          }
+          grouped.get(dateKey).push({
+            timestamp,
+            windSpeed: normalizedNumber(hourly.wind_speed_10m[index]),
+            windGust: normalizedNumber(hourly.wind_gusts_10m[index]),
+            temperature: normalizedNumber(hourly.temperature_2m[index]),
+            precipitationProbability: normalizedNumber(hourly.precipitation_probability[index])
+          });
+        }
+
+        return dateKeys.map((key, index) => ({
+          key,
+          isToday: index === 0,
+          timezone,
+          samples: grouped.get(key).sort((a, b) => a.timestamp - b.timestamp)
+        }));
+      }
+
+      function findTies(samples, field, target, maximum) {
+        return samples
+          .filter((sample) => sample[field] !== null && (maximum ? sample[field] === target : sample[field] === target))
+          .map((sample) => sample.timestamp);
+      }
+
+      function displayNumber(value, unit) {
+        if (!Number.isFinite(value)) {
+          return "Unavailable";
+        }
+        if (unit === "%") {
+          return `${String(value)}%`;
+        }
+        return `${String(value)} ${unit}`;
+      }
+
+      function unavailableResult(metric, missingDescription) {
+        return {
+          status: "Unavailable",
+          governingValue: null,
+          timestamps: [],
+          thresholds: null,
+          metric,
+          reason: `${missingDescription} ${metric} status is Unavailable.`
+        };
+      }
+
+      function calculateCrane(samples, thresholds, timezone) {
+        if (samples.length === 0) {
+          return unavailableResult("Maximum sustained wind and gust", "No included hourly samples are available.");
+        }
+        if (samples.some((sample) => sample.windSpeed === null || sample.windGust === null)) {
+          return unavailableResult("Maximum sustained wind and gust", "Required sustained-wind or gust data is missing or invalid.");
+        }
+
+        const sustainedValues = samples.map((sample) => sample.windSpeed);
+        const gustValues = samples.map((sample) => sample.windGust);
+        const sustainedMax = Math.max(...sustainedValues);
+        const gustMax = Math.max(...gustValues);
+        const sustainedTimes = findTies(samples, "windSpeed", sustainedMax, true);
+        const gustTimes = findTies(samples, "windGust", gustMax, true);
+        const gustNoGo = Math.min(thresholds.craneLimit + 5, 1.25 * thresholds.craneLimit);
+        const sustainedCautionFloor = thresholds.craneLimit - 5;
+
+        let status;
+        if (sustainedMax >= thresholds.craneLimit || gustMax >= gustNoGo) {
+          status = "No-Go";
+        } else if (
+          (sustainedMax >= sustainedCautionFloor && sustainedMax < thresholds.craneLimit) ||
+          (gustMax > thresholds.craneLimit && gustMax < gustNoGo)
+        ) {
+          status = "Caution";
+        } else {
+          status = "Go";
+        }
+
+        const sustainedTimeText = sustainedTimes.map((timestamp) => formatLocalTimestamp(timestamp, timezone)).join("; ");
+        const gustTimeText = gustTimes.map((timestamp) => formatLocalTimestamp(timestamp, timezone)).join("; ");
+        const reason = `Crane: maximum sustained wind is ${displayNumber(sustainedMax, "mph")} at ${sustainedTimeText}; maximum gust is ${displayNumber(gustMax, "mph")} at ${gustTimeText}. Sustained limit W_max = ${thresholds.craneLimit} mph and gust No-Go cutoff G_nogo = ${gustNoGo} mph; exact rule result: ${status}.`;
+
+        return {
+          status,
+          governingValue: { sustainedMax, gustMax },
+          timestamps: { sustainedTimes, gustTimes },
+          thresholds: {
+            sustainedLimit: thresholds.craneLimit,
+            sustainedCautionFloor,
+            gustNoGo
+          },
+          metric: "Maximum sustained wind and gust",
+          reason
+        };
+      }
+
+      function calculateConcrete(samples, thresholds, timezone) {
+        if (samples.length === 0) {
+          return unavailableResult("Minimum temperature", "No included hourly samples are available.");
+        }
+        if (samples.some((sample) => sample.temperature === null)) {
+          return unavailableResult("Minimum temperature", "Required temperature data is missing or invalid.");
+        }
+
+        const temperatures = samples.map((sample) => sample.temperature);
+        const minimum = Math.min(...temperatures);
+        const times = findTies(samples, "temperature", minimum, false);
+        let status;
+        if (minimum <= thresholds.concreteNoGo) {
+          status = "No-Go";
+        } else if (minimum <= thresholds.concreteCaution) {
+          status = "Caution";
+        } else {
+          status = "Go";
+        }
+        const timeText = times.map((timestamp) => formatLocalTimestamp(timestamp, timezone)).join("; ");
+        const reason = `Concrete: minimum temperature is ${displayNumber(minimum, "°F")} at ${timeText}; T_nogo = ${thresholds.concreteNoGo} °F, T_caut = ${thresholds.concreteCaution} °F; exact rule result: ${status}.`;
+
+        return {
+          status,
+          governingValue: minimum,
+          timestamps: times,
+          thresholds: {
+            caution: thresholds.concreteCaution,
+            noGo: thresholds.concreteNoGo
+          },
+          metric: "Minimum temperature",
+          reason
+        };
+      }
+
+      function calculateRoofing(samples, thresholds, timezone) {
+        if (samples.length === 0) {
+          return unavailableResult("Maximum precipitation probability", "No included hourly samples are available.");
+        }
+        if (samples.some((sample) => sample.precipitationProbability === null)) {
+          return unavailableResult("Maximum precipitation probability", "Required precipitation-probability data is missing or invalid.");
+        }
+
+        const probabilities = samples.map((sample) => sample.precipitationProbability);
+        const maximum = Math.max(...probabilities);
+        const times = findTies(samples, "precipitationProbability", maximum, true);
+        let status;
+        if (maximum >= thresholds.roofingNoGo) {
+          status = "No-Go";
+        } else if (maximum >= thresholds.roofingCaution) {
+          status = "Caution";
+        } else {
+          status = "Go";
+        }
+        const timeText = times.map((timestamp) => formatLocalTimestamp(timestamp, timezone)).join("; ");
+        const reason = `Roofing: maximum hourly precipitation probability is ${displayNumber(maximum, "%")} at ${timeText}; P_caut = ${thresholds.roofingCaution}%, P_nogo = ${thresholds.roofingNoGo}%; exact rule result: ${status}.`;
+
+        return {
+          status,
+          governingValue: maximum,
+          timestamps: times,
+          thresholds: {
+            caution: thresholds.roofingCaution,
+            noGo: thresholds.roofingNoGo
+          },
+          metric: "Maximum precipitation probability",
+          reason
+        };
+      }
+
+      function readThresholdConfig() {
+        return {
+          craneLimit: readNumber(elements.craneLimit),
+          concreteCaution: readNumber(elements.concreteCaution),
+          concreteNoGo: readNumber(elements.concreteNoGo),
+          roofingCaution: readNumber(elements.roofingCaution),
+          roofingNoGo: readNumber(elements.roofingNoGo)
+        };
+      }
+
+      let normalizedDays = [];
+      let dailyActivityResults = [];
+
+      function calculateAllActivities() {
+        if (!forecastData) {
+          return;
+        }
+        if (!validateThresholds()) {
+          normalizedDays = normalizeForecast(forecastData, new Date());
+          dailyActivityResults = normalizedDays.map((day) => ({
+            key: day.key,
+            crane: unavailableResult("Maximum sustained wind and gust", "Threshold configuration is invalid."),
+            concrete: unavailableResult("Minimum temperature", "Threshold configuration is invalid."),
+            roofing: unavailableResult("Maximum precipitation probability", "Threshold configuration is invalid.")
+          }));
+          publishStage3Results();
+          return;
+        }
+
+        const thresholds = readThresholdConfig();
+        normalizedDays = normalizeForecast(forecastData, new Date());
+        dailyActivityResults = normalizedDays.map((day) => ({
+          key: day.key,
+          crane: calculateCrane(day.samples, thresholds, day.timezone),
+          concrete: calculateConcrete(day.samples, thresholds, day.timezone),
+          roofing: calculateRoofing(day.samples, thresholds, day.timezone)
+        }));
+        publishStage3Results();
+      }
+
+      function publishStage3Results() {
+        window.JobsiteWeatherStage3 = {
+          normalizeForecast,
+          calculateCrane,
+          calculateConcrete,
+          calculateRoofing,
+          normalizedDays,
+          dailyActivityResults
+        };
+      }
+
       async function loadForecast() {
         const coordinates = readCoordinates();
         if (!coordinates.valid) {
@@ -1700,9 +1983,10 @@
           setForecastState(
             "success",
             "Forecast received",
-            `${responseInfo.hourlyCount} hourly records loaded. Activity ratings and local-day grouping are not part of Stage 2.${missingMessage}`,
+            `${responseInfo.hourlyCount} hourly records loaded and normalized. Daily activity calculations are active.${missingMessage}`,
             "OK"
           );
+          calculateAllActivities();
           showLocationMessage("Forecast loaded for the selected coordinates.", "valid");
         } catch (error) {
           if (error.name === "AbortError" || thisRequest !== requestNumber) {
@@ -1798,11 +2082,13 @@
             elements.craneLimitSlider.value = String(value);
           }
           validateThresholds();
+          calculateAllActivities();
         });
 
         elements.craneLimitSlider.addEventListener("input", () => {
           elements.craneLimit.value = Number(elements.craneLimitSlider.value).toFixed(1);
           validateThresholds();
+          calculateAllActivities();
         });
 
         [
@@ -1810,7 +2096,10 @@
           elements.concreteNoGo,
           elements.roofingCaution,
           elements.roofingNoGo
-        ].forEach((input) => input.addEventListener("input", validateThresholds));
+        ].forEach((input) => input.addEventListener("input", () => {
+          validateThresholds();
+          calculateAllActivities();
+        }));
 
         elements.retryForecast.addEventListener("click", loadForecast);
         loadForecast();
