@@ -687,6 +687,24 @@
       box-shadow: inset 0 0 0 1px #6a9c7d;
     }
 
+    button.day-card {
+      width: 100%;
+      cursor: pointer;
+      color: inherit;
+      font: inherit;
+      text-align: left;
+    }
+
+    button.day-card:hover {
+      border-color: #91aa98;
+      background: #f8faf8;
+    }
+
+    button.day-card:focus-visible {
+      outline: 3px solid #d29a39;
+      outline-offset: 2px;
+    }
+
     .day-card-header {
       min-height: 48px;
       margin-bottom: 8px;
@@ -1195,7 +1213,7 @@
         </div>
       </div>
       <div>
-        <span class="mockup-pill">Stage 3 · Forecast calculations</span>
+        <span class="mockup-pill">Stage 4 · Calendar &amp; details</span>
         <p class="topbar-note">Open-Meteo data enabled</p>
       </div>
     </header>
@@ -1363,19 +1381,13 @@
             <div>
               <p class="eyebrow">Weekly activity outlook</p>
               <h2 id="week-heading">Activity ratings</h2>
-              <p>Local dates and per-activity display rendering are reserved for Stage 4.</p>
+              <p>Select a local date to inspect each activity result.</p>
             </div>
             <span class="micro-pill">Calculations active</span>
           </div>
 
-          <div class="week-grid" aria-label="Seven-day rating placeholders">
-            <article class="day-card"><div class="day-card-header"><span class="day-name">Day 1</span><span class="day-date">Pending</span></div><div class="rating-list"><div class="rating-line"><span>Crane</span><strong class="status pending">Pending</strong></div><div class="rating-line"><span>Concrete</span><strong class="status pending">Pending</strong></div><div class="rating-line"><span>Roofing</span><strong class="status pending">Pending</strong></div></div></article>
-            <article class="day-card"><div class="day-card-header"><span class="day-name">Day 2</span><span class="day-date">Pending</span></div><div class="rating-list"><div class="rating-line"><span>Crane</span><strong class="status pending">Pending</strong></div><div class="rating-line"><span>Concrete</span><strong class="status pending">Pending</strong></div><div class="rating-line"><span>Roofing</span><strong class="status pending">Pending</strong></div></div></article>
-            <article class="day-card"><div class="day-card-header"><span class="day-name">Day 3</span><span class="day-date">Pending</span></div><div class="rating-list"><div class="rating-line"><span>Crane</span><strong class="status pending">Pending</strong></div><div class="rating-line"><span>Concrete</span><strong class="status pending">Pending</strong></div><div class="rating-line"><span>Roofing</span><strong class="status pending">Pending</strong></div></div></article>
-            <article class="day-card"><div class="day-card-header"><span class="day-name">Day 4</span><span class="day-date">Pending</span></div><div class="rating-list"><div class="rating-line"><span>Crane</span><strong class="status pending">Pending</strong></div><div class="rating-line"><span>Concrete</span><strong class="status pending">Pending</strong></div><div class="rating-line"><span>Roofing</span><strong class="status pending">Pending</strong></div></div></article>
-            <article class="day-card"><div class="day-card-header"><span class="day-name">Day 5</span><span class="day-date">Pending</span></div><div class="rating-list"><div class="rating-line"><span>Crane</span><strong class="status pending">Pending</strong></div><div class="rating-line"><span>Concrete</span><strong class="status pending">Pending</strong></div><div class="rating-line"><span>Roofing</span><strong class="status pending">Pending</strong></div></div></article>
-            <article class="day-card"><div class="day-card-header"><span class="day-name">Day 6</span><span class="day-date">Pending</span></div><div class="rating-list"><div class="rating-line"><span>Crane</span><strong class="status pending">Pending</strong></div><div class="rating-line"><span>Concrete</span><strong class="status pending">Pending</strong></div><div class="rating-line"><span>Roofing</span><strong class="status pending">Pending</strong></div></div></article>
-            <article class="day-card"><div class="day-card-header"><span class="day-name">Day 7</span><span class="day-date">Pending</span></div><div class="rating-list"><div class="rating-line"><span>Crane</span><strong class="status pending">Pending</strong></div><div class="rating-line"><span>Concrete</span><strong class="status pending">Pending</strong></div><div class="rating-line"><span>Roofing</span><strong class="status pending">Pending</strong></div></div></article>
+          <div class="week-grid" aria-label="Seven-day activity ratings">
+            <article class="day-card" aria-busy="true"><div class="day-card-header"><span class="day-name">Loading</span><span class="day-date">Forecast</span></div><div class="rating-list"><div class="rating-line"><span>Crane</span><strong class="status pending">Unavailable</strong></div><div class="rating-line"><span>Concrete</span><strong class="status pending">Unavailable</strong></div><div class="rating-line"><span>Roofing</span><strong class="status pending">Unavailable</strong></div></div></article>
           </div>
         </section>
 
@@ -1383,16 +1395,47 @@
           <div class="section-heading selected-day-heading">
             <div>
               <p class="eyebrow">Activity details</p>
-              <h2 id="selected-day-heading">Ratings follow in Stage 3</h2>
-              <p>Stage 3 calculations are connected; the selected-day activity UI is reserved for Stage 4.</p>
+              <h2 id="selected-day-heading">Loading selected day</h2>
+              <p id="selected-day-caption">Waiting for forecast data.</p>
             </div>
-            <span class="micro-pill">No sample ratings</span>
+            <span class="micro-pill" id="selected-day-status">Unavailable</span>
           </div>
-          <div class="forecast-variables" aria-label="Forecast data fields requested">
-            <span class="forecast-variable">Temperature 2 m (&deg;F)</span>
-            <span class="forecast-variable">Wind 10 m (mph)</span>
-            <span class="forecast-variable">Gusts 10 m (mph)</span>
-            <span class="forecast-variable">Hourly precipitation probability (%)</span>
+          <div id="activity-details" class="activity-grid" aria-live="polite">
+            <article class="activity-card">
+              <div class="activity-card-top"><h3>Crane Lifts</h3><strong class="status pending">Unavailable</strong></div>
+              <p class="activity-reason">Waiting for the forecast.</p>
+            </article>
+            <article class="activity-card">
+              <div class="activity-card-top"><h3>Concrete Pours</h3><strong class="status pending">Unavailable</strong></div>
+              <p class="activity-reason">Waiting for the forecast.</p>
+            </article>
+            <article class="activity-card">
+              <div class="activity-card-top"><h3>Roofing</h3><strong class="status pending">Unavailable</strong></div>
+              <p class="activity-reason">Waiting for the forecast.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="panel hourly-panel" aria-labelledby="hourly-heading">
+          <div class="hourly-heading">
+            <h2 id="hourly-heading">Hourly forecast</h2>
+            <p id="hourly-caption">Waiting for forecast data.</p>
+          </div>
+          <div class="table-wrap" id="hourly-table-wrap">
+            <table class="hourly-table">
+              <thead>
+                <tr>
+                  <th scope="col">Local timestamp</th>
+                  <th scope="col">Sustained wind at 10 m (mph)</th>
+                  <th scope="col">Gust at 10 m (mph)</th>
+                  <th scope="col">Temperature at 2 m (&deg;F)</th>
+                  <th scope="col">Hourly precipitation probability (%)</th>
+                </tr>
+              </thead>
+              <tbody id="hourly-table-body">
+                <tr><td colspan="5">Waiting for forecast data.</td></tr>
+              </tbody>
+            </table>
           </div>
         </section>
 
@@ -1446,7 +1489,15 @@
         forecastCoordinates: document.getElementById("forecast-coordinates"),
         forecastTimezone: document.getElementById("forecast-timezone"),
         forecastRetrieved: document.getElementById("forecast-retrieved"),
-        forecastSamples: document.getElementById("forecast-samples")
+        forecastSamples: document.getElementById("forecast-samples"),
+        weekGrid: document.querySelector(".week-grid"),
+        weekHeading: document.getElementById("week-heading"),
+        selectedDayHeading: document.getElementById("selected-day-heading"),
+        selectedDayCaption: document.getElementById("selected-day-caption"),
+        selectedDayStatus: document.getElementById("selected-day-status"),
+        activityDetails: document.getElementById("activity-details"),
+        hourlyCaption: document.getElementById("hourly-caption"),
+        hourlyTableBody: document.getElementById("hourly-table-body")
       };
 
       let map = null;
@@ -1877,6 +1928,183 @@
 
       let normalizedDays = [];
       let dailyActivityResults = [];
+      let selectedDateKey = null;
+
+      function statusClass(status) {
+        if (status === "No-Go") {
+          return "no-go";
+        }
+        return status.toLowerCase().replace(" ", "-");
+      }
+
+      function formatCalendarDate(dateKey, timezone) {
+        const [year, month, day] = dateKey.split("-").map(Number);
+        const date = new Date(Date.UTC(year, month - 1, day, 12));
+        return new Intl.DateTimeFormat("en-US", {
+          timeZone: "UTC",
+          weekday: "short",
+          month: "short",
+          day: "numeric"
+        }).format(date);
+      }
+
+      function formatShortDate(dateKey) {
+        const [year, month, day] = dateKey.split("-").map(Number);
+        const date = new Date(Date.UTC(year, month - 1, day, 12));
+        return new Intl.DateTimeFormat("en-US", {
+          timeZone: "UTC",
+          weekday: "long",
+          month: "long",
+          day: "numeric",
+          year: "numeric"
+        }).format(date);
+      }
+
+      function timestampList(timestamps, timezone) {
+        if (!Array.isArray(timestamps) || timestamps.length === 0) {
+          return "No timestamp";
+        }
+        return timestamps.map((timestamp) => formatLocalTimestamp(timestamp, timezone)).join("; ");
+      }
+
+      function governingValueText(result) {
+        if (result.status === "Unavailable") {
+          return "Unavailable";
+        }
+        if (typeof result.governingValue === "number") {
+          if (result.metric === "Minimum temperature") {
+            return `${displayNumber(result.governingValue, "°F")}`;
+          }
+          if (result.metric === "Maximum precipitation probability") {
+            return `${displayNumber(result.governingValue, "%")}`;
+          }
+        }
+        if (result.metric === "Maximum sustained wind and gust") {
+          return `${displayNumber(result.governingValue.sustainedMax, "mph")} sustained / ${displayNumber(result.governingValue.gustMax, "mph")} gust`;
+        }
+        return "Unavailable";
+      }
+
+      function governingTimestampText(result, timezone) {
+        if (result.status === "Unavailable") {
+          return "Timestamp unavailable";
+        }
+        if (result.metric === "Maximum sustained wind and gust") {
+          return `Sustained: ${timestampList(result.timestamps.sustainedTimes, timezone)}<br>Gust: ${timestampList(result.timestamps.gustTimes, timezone)}`;
+        }
+        return timestampList(result.timestamps, timezone);
+      }
+
+      function thresholdText(result) {
+        if (result.status === "Unavailable") {
+          return "Configured thresholds unavailable";
+        }
+        if (result.metric === "Maximum sustained wind and gust") {
+          return `W_max = ${result.thresholds.sustainedLimit} mph; Caution sustained >= ${result.thresholds.sustainedCautionFloor} mph; Gust No-Go >= ${result.thresholds.gustNoGo} mph`;
+        }
+        if (result.metric === "Minimum temperature") {
+          return `T_nogo = ${result.thresholds.noGo} °F; T_caut = ${result.thresholds.caution} °F`;
+        }
+        return `P_caut = ${result.thresholds.caution}%; P_nogo = ${result.thresholds.noGo}%`;
+      }
+
+      function renderActivityCard(title, result, timezone) {
+        const slug = statusClass(result.status);
+        return `
+          <article class="activity-card">
+            <div class="activity-card-top">
+              <h3>${title}</h3>
+              <strong class="status ${slug}">${result.status}</strong>
+            </div>
+            <p class="metric-label">Governing metric</p>
+            <strong class="metric-value">${governingValueText(result)}</strong>
+            <p class="metric-label">Local timestamp(s)</p>
+            <p class="activity-reason">${governingTimestampText(result, timezone)}</p>
+            <p class="metric-label">Thresholds</p>
+            <p class="activity-reason">${thresholdText(result)}</p>
+            <p class="activity-reason">${result.reason}</p>
+          </article>
+        `;
+      }
+
+      function renderHourlyTable(day) {
+        if (!day || day.samples.length === 0) {
+          elements.hourlyTableBody.innerHTML = '<tr><td colspan="5">No included hourly samples are available for this date.</td></tr>';
+          return;
+        }
+
+        elements.hourlyTableBody.innerHTML = day.samples.map((sample) => `
+          <tr>
+            <td>${formatLocalTimestamp(sample.timestamp, day.timezone)}</td>
+            <td>${sample.windSpeed === null ? "Unavailable" : displayNumber(sample.windSpeed, "mph")}</td>
+            <td>${sample.windGust === null ? "Unavailable" : displayNumber(sample.windGust, "mph")}</td>
+            <td>${sample.temperature === null ? "Unavailable" : displayNumber(sample.temperature, "°F")}</td>
+            <td>${sample.precipitationProbability === null ? "Unavailable" : displayNumber(sample.precipitationProbability, "%")}</td>
+          </tr>
+        `).join("");
+      }
+
+      function selectDay(dateKey) {
+        if (!normalizedDays.some((day) => day.key === dateKey)) {
+          return;
+        }
+        selectedDateKey = dateKey;
+        renderStage4();
+      }
+
+      function renderStage4() {
+        if (!normalizedDays.length || !dailyActivityResults.length) {
+          elements.weekGrid.innerHTML = '<article class="day-card"><div class="day-card-header"><span class="day-name">Loading</span><span class="day-date">Forecast</span></div><div class="rating-list"><div class="rating-line"><span>Crane</span><strong class="status pending">Unavailable</strong></div><div class="rating-line"><span>Concrete</span><strong class="status pending">Unavailable</strong></div><div class="rating-line"><span>Roofing</span><strong class="status pending">Unavailable</strong></div></div></article>';
+          elements.selectedDayHeading.textContent = "Loading selected day";
+          elements.selectedDayCaption.textContent = "Waiting for forecast data.";
+          return;
+        }
+
+        if (!selectedDateKey || !normalizedDays.some((day) => day.key === selectedDateKey)) {
+          const earliestRisk = dailyActivityResults.find((day) =>
+            ["Caution", "No-Go"].includes(day.crane.status) ||
+            ["Caution", "No-Go"].includes(day.concrete.status) ||
+            ["Caution", "No-Go"].includes(day.roofing.status)
+          );
+          selectedDateKey = earliestRisk ? earliestRisk.key : normalizedDays[0].key;
+        }
+
+        elements.weekGrid.innerHTML = normalizedDays.map((day, index) => {
+          const result = dailyActivityResults[index];
+          const isSelected = day.key === selectedDateKey;
+          const todayMark = day.isToday ? '<span class="today-mark">Today</span>' : "";
+          return `
+            <button class="day-card${isSelected ? " is-selected" : ""}" type="button" data-date="${day.key}" aria-pressed="${isSelected}" aria-label="Select ${formatShortDate(day.key)}">
+              <div class="day-card-header">
+                <span class="day-name">${formatCalendarDate(day.key, day.timezone).split(",")[0]}</span>
+                <span class="day-date">${formatCalendarDate(day.key, day.timezone).replace(/^[^,]+,\s*/, "")}${todayMark}</span>
+              </div>
+              <div class="rating-list">
+                <div class="rating-line"><span>Crane</span><strong class="status ${statusClass(result.crane.status)}">${result.crane.status}</strong></div>
+                <div class="rating-line"><span>Concrete</span><strong class="status ${statusClass(result.concrete.status)}">${result.concrete.status}</strong></div>
+                <div class="rating-line"><span>Roofing</span><strong class="status ${statusClass(result.roofing.status)}">${result.roofing.status}</strong></div>
+              </div>
+            </button>
+          `;
+        }).join("");
+
+        elements.weekGrid.querySelectorAll(".day-card").forEach((card) => {
+          card.addEventListener("click", () => selectDay(card.dataset.date));
+        });
+
+        const dayIndex = normalizedDays.findIndex((day) => day.key === selectedDateKey);
+        const day = normalizedDays[dayIndex];
+        const result = dailyActivityResults[dayIndex];
+        elements.selectedDayHeading.textContent = formatShortDate(day.key);
+        elements.selectedDayCaption.textContent = `${day.isToday ? "Today and " : ""}forecast window: ${day.samples.length} included local hourly samples`;
+        elements.selectedDayStatus.textContent = "Per-activity results";
+        elements.activityDetails.innerHTML =
+          renderActivityCard("Crane Lifts", result.crane, day.timezone) +
+          renderActivityCard("Concrete Pours", result.concrete, day.timezone) +
+          renderActivityCard("Roofing", result.roofing, day.timezone);
+        elements.hourlyCaption.textContent = `${formatShortDate(day.key)} · ${day.timezone}`;
+        renderHourlyTable(day);
+      }
 
       function calculateAllActivities() {
         if (!forecastData) {
@@ -1914,6 +2142,7 @@
           normalizedDays,
           dailyActivityResults
         };
+        renderStage4();
       }
 
       async function loadForecast() {
@@ -1934,6 +2163,10 @@
         forecastData = null;
         resetForecastMetadata();
         setForecastState("loading", "Loading forecast", "Requesting hourly data from Open-Meteo.", "...");
+        normalizedDays = [];
+        dailyActivityResults = [];
+        selectedDateKey = null;
+        renderStage4();
         elements.locationSubmit.disabled = true;
         elements.retryForecast.disabled = true;
         showLocationMessage("Fetching forecast for the selected coordinates.", "");
@@ -1993,6 +2226,10 @@
             return;
           }
           forecastData = null;
+          normalizedDays = [];
+          dailyActivityResults = [];
+          selectedDateKey = null;
+          renderStage4();
           const detail = error instanceof TypeError
             ? "Check your internet connection and try again."
             : error.message;
