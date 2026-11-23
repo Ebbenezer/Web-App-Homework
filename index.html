@@ -552,6 +552,87 @@
       font-size: 0.66rem;
     }
 
+    .validation-panel {
+      min-width: 0;
+      max-width: 100%;
+      overflow: hidden;
+      border: 1px solid #dce5df;
+      border-radius: 14px;
+      background: #fff;
+      box-shadow: var(--shadow);
+      padding: 12px 16px;
+    }
+
+    .validation-panel summary {
+      min-height: 34px;
+      color: var(--ink);
+      cursor: pointer;
+      font-size: 0.78rem;
+      font-weight: 850;
+    }
+
+    .validation-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .validation-detail {
+      min-width: 0;
+      border: 1px solid #e1e9e3;
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+
+    .validation-detail span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.62rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .validation-detail strong,
+    .validation-detail code,
+    .validation-detail a {
+      display: block;
+      margin-top: 5px;
+      color: var(--ink);
+      font-size: 0.72rem;
+      overflow-wrap: anywhere;
+    }
+
+    .validation-detail code {
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      white-space: normal;
+    }
+
+    .nws-validation {
+      min-width: 0;
+      max-width: 100%;
+      overflow: hidden;
+      margin-top: 10px;
+      border: 1px solid #e1e9e3;
+      border-radius: 10px;
+    }
+
+    .nws-validation summary {
+      min-height: 38px;
+      padding: 9px 12px;
+      color: var(--ink);
+      font-size: 0.72rem;
+      font-weight: 850;
+    }
+
+    .nws-validation .nws-context {
+      margin: 0 12px 10px;
+      color: var(--muted);
+      font-size: 0.68rem;
+      overflow-wrap: anywhere;
+    }
+
     .forecast-variables {
       display: flex;
       flex-wrap: wrap;
@@ -1183,6 +1264,10 @@
       .forecast-facts {
         grid-template-columns: minmax(0, 1fr);
       }
+
+      .validation-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
     }
 
     @media (max-width: 370px) {
@@ -1383,6 +1468,55 @@
           </div>
         </section>
 
+        <details class="validation-panel" open>
+          <summary>Validation request and source context</summary>
+          <div class="validation-grid">
+            <div class="validation-detail">
+              <span>Exact Open-Meteo request</span>
+              <code id="validation-request">Waiting for forecast request.</code>
+            </div>
+            <div class="validation-detail">
+              <span>Requested units</span>
+              <strong id="validation-units">temperature_2m °F · wind mph · precipitation probability %</strong>
+            </div>
+            <div class="validation-detail">
+              <span>Returned source metadata</span>
+              <strong id="validation-source-metadata">Waiting for forecast response.</strong>
+            </div>
+            <div class="validation-detail">
+              <span>NWS contextual comparison</span>
+              <a href="./VALIDATION.md">Recorded NWS endpoint, grid, retrieval context, matching intervals, and source differences</a>
+            </div>
+          </div>
+          <details class="nws-validation">
+            <summary>Captured NWS matching intervals — 2026-11-23</summary>
+            <p class="nws-context">Endpoint: api.weather.gov/gridpoints/SLC/105,151/forecast/hourly · grid timezone America/Denver · retrieval context: generated 2026-11-23T21:29:26Z · NWS wind is hourly text/sustained wind; NWS gust field is not available.</p>
+            <div class="table-wrap">
+              <table class="hourly-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Local interval</th>
+                    <th scope="col">Temperature (°F)</th>
+                    <th scope="col">Sustained wind (mph)</th>
+                    <th scope="col">Precipitation probability (%)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>15:00-16:00 MST</td><td>46</td><td>2</td><td>1</td></tr>
+                  <tr><td>16:00-17:00 MST</td><td>47</td><td>2</td><td>1</td></tr>
+                  <tr><td>17:00-18:00 MST</td><td>45</td><td>2</td><td>1</td></tr>
+                  <tr><td>18:00-19:00 MST</td><td>43</td><td>2</td><td>1</td></tr>
+                  <tr><td>19:00-20:00 MST</td><td>42</td><td>2</td><td>1</td></tr>
+                  <tr><td>20:00-21:00 MST</td><td>39</td><td>2</td><td>1</td></tr>
+                  <tr><td>21:00-22:00 MST</td><td>37</td><td>1</td><td>0</td></tr>
+                  <tr><td>22:00-23:00 MST</td><td>36</td><td>1</td><td>0</td></tr>
+                  <tr><td>23:00-24:00 MST</td><td>35</td><td>1</td><td>0</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </details>
+        </details>
+
         <section class="panel week-panel" aria-labelledby="week-heading">
           <div class="section-heading week-heading">
             <div>
@@ -1433,6 +1567,8 @@
               <thead>
                 <tr>
                   <th scope="col">Local timestamp</th>
+                  <th scope="col">Unix timestamp</th>
+                  <th scope="col">UTC offset</th>
                   <th scope="col">Sustained wind at 10 m (mph)</th>
                   <th scope="col">Gust at 10 m (mph)</th>
                   <th scope="col">Temperature at 2 m (&deg;F)</th>
@@ -1504,7 +1640,9 @@
         selectedDayStatus: document.getElementById("selected-day-status"),
         activityDetails: document.getElementById("activity-details"),
         hourlyCaption: document.getElementById("hourly-caption"),
-        hourlyTableBody: document.getElementById("hourly-table-body")
+        hourlyTableBody: document.getElementById("hourly-table-body"),
+        validationRequest: document.getElementById("validation-request"),
+        validationSourceMetadata: document.getElementById("validation-source-metadata")
       };
 
       let map = null;
@@ -1638,6 +1776,8 @@
         elements.forecastTimezone.textContent = "Waiting for forecast";
         elements.forecastRetrieved.textContent = "Not retrieved";
         elements.forecastSamples.textContent = "Hourly records: not loaded";
+        elements.validationRequest.textContent = "Waiting for forecast request.";
+        elements.validationSourceMetadata.textContent = "Waiting for forecast response.";
       }
 
       function formatRetrievalTime(timezone) {
@@ -1728,6 +1868,18 @@
           minute: "2-digit",
           timeZoneName: "short"
         }).format(new Date(timestamp));
+      }
+
+      function formatUtcOffset(timestamp, timezone) {
+        try {
+          const parts = new Intl.DateTimeFormat("en-US", {
+            timeZone: timezone,
+            timeZoneName: "shortOffset"
+          }).formatToParts(new Date(timestamp));
+          return parts.find((part) => part.type === "timeZoneName")?.value || "UTC offset unavailable";
+        } catch (error) {
+          return "UTC offset unavailable";
+        }
       }
 
       function normalizedNumber(value) {
@@ -2095,7 +2247,7 @@
           return "Configured thresholds unavailable";
         }
         if (result.metric === "Maximum sustained wind and gust") {
-          return `W_max = ${result.thresholds.sustainedLimit} mph; Caution sustained >= ${result.thresholds.sustainedCautionFloor} mph; Gust No-Go >= ${result.thresholds.gustNoGo} mph`;
+          return `W_max = ${result.thresholds.sustainedLimit} mph; sustained Caution floor = ${result.thresholds.sustainedCautionFloor} mph; G_nogo = ${result.thresholds.gustNoGo} mph`;
         }
         if (result.metric === "Minimum temperature") {
           return `T_nogo = ${result.thresholds.noGo} °F; T_caut = ${result.thresholds.caution} °F`;
@@ -2124,13 +2276,15 @@
 
       function renderHourlyTable(day) {
         if (!day || day.samples.length === 0) {
-          elements.hourlyTableBody.innerHTML = '<tr><td colspan="5">No included hourly samples are available for this date.</td></tr>';
+          elements.hourlyTableBody.innerHTML = '<tr><td colspan="7">No included hourly samples are available for this date.</td></tr>';
           return;
         }
 
         elements.hourlyTableBody.innerHTML = day.samples.map((sample) => `
           <tr>
             <td>${formatLocalTimestamp(sample.timestamp, day.timezone)}</td>
+            <td>${Math.round(sample.timestamp / 1000)}</td>
+            <td>${formatUtcOffset(sample.timestamp, day.timezone)}</td>
             <td>${sample.windSpeed === null ? "Unavailable" : displayNumber(sample.windSpeed, "mph")}</td>
             <td>${sample.windGust === null ? "Unavailable" : displayNumber(sample.windGust, "mph")}</td>
             <td>${sample.temperature === null ? "Unavailable" : displayNumber(sample.temperature, "°F")}</td>
@@ -2279,9 +2433,11 @@
           temperature_unit: "fahrenheit",
           wind_speed_unit: "mph"
         });
+        const requestUrl = `https://api.open-meteo.com/v1/forecast?${parameters.toString()}`;
+        elements.validationRequest.textContent = requestUrl;
 
         try {
-          const response = await fetch(`https://api.open-meteo.com/v1/forecast?${parameters.toString()}`, {
+          const response = await fetch(requestUrl, {
             signal: controller.signal,
             headers: { Accept: "application/json" }
           });
@@ -2307,6 +2463,8 @@
           elements.forecastTimezone.textContent = payload.timezone;
           elements.forecastRetrieved.textContent = formatRetrievalTime(payload.timezone);
           elements.forecastSamples.textContent = `Hourly records: ${responseInfo.hourlyCount}`;
+          elements.validationSourceMetadata.textContent =
+            `Response coordinates ${payload.latitude}, ${payload.longitude}; timezone ${payload.timezone}; UTC offset ${payload.utc_offset_seconds} seconds; elevation ${payload.elevation} m; units temperature_2m=${payload.hourly_units.temperature_2m}, wind_speed_10m=${payload.hourly_units.wind_speed_10m}, wind_gusts_10m=${payload.hourly_units.wind_gusts_10m}, precipitation_probability=${payload.hourly_units.precipitation_probability}.`;
 
           const missingMessage = responseInfo.missingValues
             ? ` ${responseInfo.missingValues} hourly values are missing; affected activity ratings will be unavailable.`
