@@ -1,5 +1,8 @@
 # App Specification — Jobsite Weather Planner
 
+## App Overview
+The Jobsite Weather Planner is a static, single-file `index.html` dashboard that helps construction project managers, superintendents, and field engineers compare a seven-local-date weather forecast for one jobsite. It shows separate Go, Caution, No-Go, or Unavailable planning statuses for crane lifts, concrete pours, and roofing, with the forecast values and thresholds behind each result. These statuses are planning indicators, not safety determinations.
+
 ## Purpose
 The **Jobsite Weather Planner** is a single-file web application for commercial construction project managers, superintendents, and field engineers to make preliminary schedule-planning decisions for **crane lifts**, **concrete pours**, and **roofing** at one selected jobsite. For each of the next seven local calendar dates, the app compares the Open-Meteo hourly forecast with the configured activity thresholds and assigns each activity a **Go**, **Caution**, or **No-Go** planning status. Users can compare the activity statuses across the week, select a day, and inspect the forecast values, timestamps, thresholds, and comparisons behind each status.
 
@@ -104,4 +107,31 @@ Validation is **pending implementation and capture of a forecast fixture**; do n
 - **Feature 2 (Original idea):** `[Define after validation]`
 
 ## Build stages
-*(Populate in Plan mode after the seven sections are complete, then build one stage at a time starting with the page layout mockup.)*
+Build the application one stage at a time, beginning with the page layout mockup.
+
+### Stage 1: Page layout mockup
+**Build:** Create the page structure and responsive visual mockup with placeholder forecast data: header and location summary, map area, coordinate and threshold controls, seven-day activity cards, selected-day detail, hourly table, and loading/error states. Do not connect real forecast data yet.
+
+**Check:** Review the information hierarchy at desktop and phone widths. Confirm there is no horizontal page overflow, day statuses are readable without color alone, and the map placeholder does not crowd ratings on mobile.
+
+### Stage 2: Location, inputs, and forecast connection
+**Build:** Implement coordinate entry, map selection after choosing a map provider, threshold controls and validation, and the Open-Meteo request for the specified hourly fields and units. Add loading, retryable API/network errors, selected-coordinate display, and forecast retrieval metadata.
+
+**Check:** Confirm the default Provo-area coordinates and thresholds load; map and coordinate changes stay synchronized; invalid coordinates and threshold ordering show errors; valid threshold changes recalculate; requests use the required fields, units, timezone, and seven-day window; and fetch failures never appear as successful data.
+
+### Stage 3: Forecast normalization and activity calculations
+**Build:** Convert timestamps to jobsite-local time, group the seven dates correctly (including daylight-saving days), use only future hours for today, validate response arrays and units, and implement all crane, concrete, and roofing formulas exactly. Missing or incomplete required data produces **Unavailable**.
+
+**Check:** Use fixed hourly fixtures to verify each maximum/minimum, timestamp, and status. Exercise every exact threshold boundary, tied governing hours, invalid/missing values, and today's partial window. Verify comparisons use unrounded values and missing data never becomes **Go**.
+
+### Stage 4: Calendar, explanations, and hourly details
+**Build:** Replace placeholders with the seven-day per-activity statuses, select the earliest risk date on load (or the first date when none is at risk), and render the selected date's reasons, thresholds, governing values/times, and hourly table. Do not add a combined overall-day status.
+
+**Check:** Confirm each day and activity is selectable and readable; explanations trace to the exact rule and local time; tied timestamps are all shown; all displayed metrics have units; and status text remains clear without color.
+
+### Stage 5: Validation and field-use polish
+**Build:** Complete the hand-calculation validation record using captured Open-Meteo data, compare matching hourly intervals with the NWS forecast as context, and refine responsive, keyboard/touch, and error-state behavior.
+
+**Check:** Confirm the app matches hand-calculated ratings and reasons for the same fixture; document source and time-window differences in the NWS comparison; test network/API failures, incomplete data, and supported screen widths; verify there is no horizontal page overflow and no wording implies safety certification.
+
+**Dependency:** Select the interactive map provider before implementing Stage 2's map integration; the provider intentionally remains unspecified in this specification.
