@@ -191,9 +191,80 @@ Before completion, fixtures must cover exact threshold boundaries, tied governin
 - Paid weather services requiring API keys, proprietary radar/telematics feeds, or a live backend. The application remains a static single-file `index.html` suitable for static hosting. Forecast access requires the Open-Meteo network service; Leaflet and OpenStreetMap tiles require internet access, attribution, and compliance with the tile provider's usage policy. Open-Meteo receives the jobsite coordinates; map-tile requests reveal the viewed area.
 
 ## Features
-*(Add at least two custom features here—with at least one being your own original idea—after the must-haves pass validation and before building those features.)*
-- **Feature 1 (e.g., Crew working hours filter):** `[Define after validation]`
-- **Feature 2 (Original idea):** `[Define after validation]`
+The must-have forecast, calculation, calendar, and validation behaviors remain in place. The custom features below are planned additions; they do not alter the Go, Caution, No-Go, or Unavailable rules used for individual activities.
+
+### Feature 1: Working-Window Finder
+
+**Purpose:** Help a superintendent or field engineer identify consecutive portions of a selected shift when crane lifts, concrete pours, and roofing can proceed under the app's planning indicators.
+
+**Inputs:**
+- Selected local calendar date. This is independent of the currently selected day and must update when the user changes the date.
+- Work start time and work end time in jobsite-local time.
+- Minimum uninterrupted duration of 1 to 12 full forecast hours. The default is 4 hours.
+- Qualifying statuses: **Go** or **Caution**. A window may contain only hours whose selected activity is Go or Caution.
+- No-Go and Unavailable hours stop or prevent qualification.
+
+**Rules and calculations:**
+- Evaluate one activity at a time and produce three separate lists: Crane Lifts, Concrete Pours, and Roofing.
+- Convert the shift start and end times to the selected date's local time.
+- Include only complete hourly forecast samples whose full hour falls entirely inside the selected shift.
+- Exclude partial overlapping edge hours rather than treating a partial hour as a full usable hour.
+- If the selected shift is shorter than one complete hour or crosses no complete included forecast hour, return an explicit no-window result.
+- Examine complete hourly activity statuses in chronological order and find consecutive sequences containing only Go or Caution.
+- Split a window when an hour is No-Go or Unavailable, or when its status breaks the consecutive sequence.
+- Report a window only when the sequence length is at least the configured minimum duration in full forecast hours.
+- Duration is a count of complete qualifying forecast hours, not a wall-clock estimate within a partial edge hour.
+- For each qualifying window, retain the worst included status; **Caution** is worse than **Go**.
+- Crane governing evidence must preserve separate sustained-wind and gust maxima/timestamps within the window. Concrete preserves the window minimum temperature and tied timestamps. Roofing preserves the window maximum hourly precipitation probability and tied timestamps.
+- Missing or invalid required hourly values make the affected hour Unavailable and therefore cannot qualify as part of a window.
+
+**Outputs:**
+- Three chronological window lists, one for each activity.
+- Each window shows local start time, local end time, complete-hour count/duration, worst status, governing value and unit, and governing local timestamp(s).
+- If multiple qualifying windows exist, display them separately in start-time order.
+- If no qualifying window meets the minimum duration, show a readable no-window message identifying whether the reason is shift boundaries, No-Go hours, or missing data.
+- Do not calculate or display a combined overall window status.
+
+**Validation:**
+- Test exact one-hour shift boundaries and shifts with partial edge hours.
+- Test 1-hour and 12-hour minimum-duration boundaries.
+- Test alternating Go, Caution, No-Go, and Unavailable hours.
+- Test tied governing hours within a window.
+- Verify that partial edge hours are excluded, Caution qualifies, and missing data never creates a false usable window.
+
+### Feature 2: Shift Handoff Snapshot (Original idea)
+
+**Purpose:** This is the original, construction-specific feature. It gives a superintendent or foreman one concise, source-attributed snapshot of the next shift's weather planning results for all three activities, rather than requiring them to repeat the calendar, threshold, governing-value, and hourly details manually during a handoff.
+
+**Inputs:**
+- Selected local calendar date.
+- All three activities: Crane Lifts, Concrete Pours, and Roofing.
+- No free-text note field. The snapshot is forecast-derived and source-attributed.
+- Snapshot format selection:
+  - Copy a plain-text snapshot.
+  - Print or print/save to PDF using the browser print dialog.
+
+**Rules/calculations:**
+- Do not recalculate activity ratings for the snapshot.
+- Use the currently loaded normalized forecast and the current valid threshold configuration.
+- Include the selected date's result for each activity exactly as shown in the app.
+- Include the exact reason text, status, governing value and unit, governing timestamp(s), and thresholds for all three activities.
+- Include the raw hourly rows for the selected date, with local timestamp, UTC offset, Unix timestamp, sustained wind at 10 m in mph, gust at 10 m in mph, temperature at 2 m in °F, and hourly precipitation probability in %.
+- Include site coordinates, jobsite timezone, forecast retrieval time, exact Open-Meteo request, returned units, and source elevation when available.
+- Include an explicit planning-only disclaimer.
+- If thresholds are invalid or required forecast data is unavailable, mark affected activities as Unavailable and prohibit presenting the snapshot as successful forecast evidence for those activities.
+- Keep each activity independent; do not add or calculate an overall-day status.
+
+**Outputs:**
+- A copyable plain-text handoff block with headings for location, source metadata, all three activity results, and selected-date hourly data.
+- A print-friendly layout containing the same source metadata and activity/hourly information.
+- A visible notice in the UI that the snapshot reflects a retrieval at a specific time and is a planning aid, not authorization or a safety determination.
+
+**Validation:**
+- Verify copied text contains the same status, governing value/unit, timestamp(s), thresholds, and reason as the app.
+- Verify print output includes the same values and source/retrieval metadata.
+- Verify invalid thresholds and missing/null hourly values remain visibly Unavailable.
+- Verify no overall-day status or safety certification language is introduced.
 
 ## Build stages
 Build the application one stage at a time, beginning with the page layout mockup.
