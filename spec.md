@@ -9,7 +9,7 @@ The **Jobsite Weather Planner** is a single-file web application for commercial 
 These are forecast-based planning indicators, not safety determinations or authorization to perform work. They do not replace the approved lift plan, project requirements, manufacturer instructions, or site safety procedures.
 
 ## Inputs
-- **Jobsite location:** Latitude `lat` (decimal degrees, valid range `-90` to `90`, default `40.2338`) and longitude `lon` (decimal degrees, valid range `-180` to `180`, default `-111.6585`; near Provo, Utah). Users select a point on an interactive map or enter both coordinates in numeric inputs. The map provider is not selected in this specification. Changing the location fetches a forecast for the new coordinates. Coordinates must be finite and within range; both are required.
+- **Jobsite location:** Latitude `lat` (decimal degrees, valid range `-90` to `90`, default `40.2338`) and longitude `lon` (decimal degrees, valid range `-180` to `180`, default `-111.6585`; near Provo, Utah). Users select a point on an interactive Leaflet map with OpenStreetMap tiles or enter both coordinates in numeric inputs. The map requires internet access and visible OpenStreetMap attribution. Changing the location fetches a forecast for the new coordinates. Coordinates must be finite and within range; both are required.
 - **Crane wind limit (`W_max`):** Site/lift-plan sustained-wind limit in `mph`, default `20.0 mph`, allowed range `5.0` to `80.0 mph`. Provide a numeric input and an optional synchronized slider. This is a user-configured planning threshold, not a universal crane limit.
 - **Concrete low-temperature limits:** `T_caut`, the cold-weather caution threshold, defaults to `40.0 °F`; `T_nogo`, the No-Go threshold, defaults to `32.0 °F`. Both use numeric inputs and have an allowed range of `-20.0 °F` to `70.0 °F`. A valid configuration requires `T_nogo < T_caut`.
 - **Roofing precipitation-probability limits:** `P_caut`, the caution threshold, defaults to `30%`; `P_nogo`, the No-Go threshold, defaults to `60%`. Both use numeric inputs and have an allowed range of `0%` to `100%`. A valid configuration requires `P_caut < P_nogo`.
@@ -70,7 +70,7 @@ This rule uses hourly precipitation probability only; it does not evaluate preci
 - A **No-Go** or **Caution** status uses the activity's exact rule above; do not infer a different status from rounded display values.
 
 ## Outputs
-- **Interactive map:** Displays the selected jobsite pin. Map clicks update `lat` and `lon`; coordinate inputs update the pin. Display the selected coordinates in decimal degrees. Map provider selection remains open.
+- **Interactive map:** A Leaflet map with OpenStreetMap tiles displays the selected jobsite pin and visible attribution. Map clicks update `lat` and `lon`; coordinate inputs update the pin. Display the selected coordinates in decimal degrees.
 - **Seven-day activity calendar:** Shows seven local dates and separate labeled **Go**, **Caution**, **No-Go**, or **Unavailable** statuses for **Crane Lifts**, **Concrete Pours**, and **Roofing**. Use text labels as well as color (green, amber, red); do not rely on color alone. Do not display an overall-day status.
 - **Selected-day details:** For each activity, show its status, governing value and unit, local timestamp(s), configured threshold(s), comparison operator, and a reason string. Include an hourly table with local timestamp, sustained wind at 10 m (`mph`), gust at 10 m (`mph`), temperature at 2 m (`°F`), and hourly precipitation probability (`%`). Put units in each metric's label or table header.
 - **Location and forecast metadata:** Show selected coordinates, jobsite timezone, and forecast retrieval time.
@@ -99,7 +99,7 @@ Validation is **pending implementation and capture of a forecast fixture**; do n
 - Concrete mix design, concrete/substrate temperature, curing or protection modeling, strength/maturity calculations, and high-temperature concreting rules.
 - Roofing-material-specific rules, precipitation amount/duration/type analysis, substrate conditions, and other hazards not represented by hourly precipitation probability.
 - Safety certification, OSHA compliance certification, or replacement of approved project documents, manufacturer instructions, competent-person judgment, or site safety procedures. Go/Caution/No-Go labels are planning indicators only.
-- Paid weather services requiring API keys, proprietary radar/telematics feeds, or a live backend. The application remains a static single-file `index.html` suitable for static hosting. Forecast access requires the Open-Meteo network service; an interactive map service/library is required, but its provider remains to be selected. Open-Meteo receives the jobsite coordinates; map-service requests may reveal the viewed area, depending on the selected provider.
+- Paid weather services requiring API keys, proprietary radar/telematics feeds, or a live backend. The application remains a static single-file `index.html` suitable for static hosting. Forecast access requires the Open-Meteo network service; Leaflet and OpenStreetMap tiles require internet access, attribution, and compliance with the tile provider's usage policy. Open-Meteo receives the jobsite coordinates; map-tile requests reveal the viewed area.
 
 ## Features
 *(Add at least two custom features here—with at least one being your own original idea—after the must-haves pass validation and before building those features.)*
@@ -115,9 +115,9 @@ Build the application one stage at a time, beginning with the page layout mockup
 **Check:** Review the information hierarchy at desktop and phone widths. Confirm there is no horizontal page overflow, day statuses are readable without color alone, and the map placeholder does not crowd ratings on mobile.
 
 ### Stage 2: Location, inputs, and forecast connection
-**Build:** Implement coordinate entry, map selection after choosing a map provider, threshold controls and validation, and the Open-Meteo request for the specified hourly fields and units. Add loading, retryable API/network errors, selected-coordinate display, and forecast retrieval metadata.
+**Build:** Implement coordinate entry, map selection with Leaflet and OpenStreetMap tiles, threshold controls and validation, and the Open-Meteo request for the specified hourly fields and units. Add loading, retryable API/network errors, selected-coordinate display, visible map attribution, and forecast retrieval metadata.
 
-**Check:** Confirm the default Provo-area coordinates and thresholds load; map and coordinate changes stay synchronized; invalid coordinates and threshold ordering show errors; valid threshold changes recalculate; requests use the required fields, units, timezone, and seven-day window; and fetch failures never appear as successful data.
+**Check:** Confirm the default Provo-area coordinates and thresholds load; map and coordinate changes stay synchronized; invalid coordinates and threshold ordering show errors; valid threshold changes remain configured for Stage 3 calculations; requests use the required fields, units, timezone, and seven-day window; and fetch failures never appear as successful data. Do not calculate activity ratings in Stage 2.
 
 ### Stage 3: Forecast normalization and activity calculations
 **Build:** Convert timestamps to jobsite-local time, group the seven dates correctly (including daylight-saving days), use only future hours for today, validate response arrays and units, and implement all crane, concrete, and roofing formulas exactly. Missing or incomplete required data produces **Unavailable**.
@@ -134,4 +134,4 @@ Build the application one stage at a time, beginning with the page layout mockup
 
 **Check:** Confirm the app matches hand-calculated ratings and reasons for the same fixture; document source and time-window differences in the NWS comparison; test network/API failures, incomplete data, and supported screen widths; verify there is no horizontal page overflow and no wording implies safety certification.
 
-**Dependency:** Select the interactive map provider before implementing Stage 2's map integration; the provider intentionally remains unspecified in this specification.
+**Dependency:** The interactive map uses Leaflet with OpenStreetMap tiles. Verify attribution and tile-service usage requirements before public deployment.
