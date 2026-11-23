@@ -888,6 +888,8 @@
       overflow-x: auto;
       border-top: 1px solid #edf1ed;
       overscroll-behavior-x: contain;
+      scrollbar-gutter: stable;
+      -webkit-overflow-scrolling: touch;
     }
 
     .hourly-table {
@@ -926,6 +928,11 @@
     .hourly-table td:first-child {
       color: var(--ink);
       font-weight: 800;
+    }
+
+    .table-wrap:focus-within {
+      outline: 3px solid rgba(210, 154, 57, 0.55);
+      outline-offset: -3px;
     }
 
     .state-preview {
@@ -1213,7 +1220,7 @@
         </div>
       </div>
       <div>
-        <span class="mockup-pill">Stage 4 · Calendar &amp; details</span>
+        <span class="mockup-pill">Stage 5 · Validation &amp; polish</span>
         <p class="topbar-note">Open-Meteo data enabled</p>
       </div>
     </header>
@@ -1328,7 +1335,7 @@
             </div>
           </div>
 
-          <p class="field-message" id="threshold-message" role="status" aria-live="polite">Ratings are not calculated in Stage 2.</p>
+          <p class="field-message" id="threshold-message" role="status" aria-live="polite">Validating activity thresholds.</p>
         </section>
       </aside>
 
@@ -1830,7 +1837,9 @@
 
         const sustainedTimeText = sustainedTimes.map((timestamp) => formatLocalTimestamp(timestamp, timezone)).join("; ");
         const gustTimeText = gustTimes.map((timestamp) => formatLocalTimestamp(timestamp, timezone)).join("; ");
-        const reason = `Crane: maximum sustained wind is ${displayNumber(sustainedMax, "mph")} at ${sustainedTimeText}; maximum gust is ${displayNumber(gustMax, "mph")} at ${gustTimeText}. Sustained limit W_max = ${thresholds.craneLimit} mph and gust No-Go cutoff G_nogo = ${gustNoGo} mph; exact rule result: ${status}.`;
+        const sustainedRule = `${displayNumber(sustainedMax, "mph")} is ${sustainedMax >= thresholds.craneLimit ? ">=" : "<"} ${thresholds.craneLimit} mph sustained`;
+        const gustRule = `${displayNumber(gustMax, "mph")} is ${gustMax >= gustNoGo ? ">=" : "<"} ${gustNoGo} mph gust`;
+        const reason = `Crane: maximum sustained wind is ${displayNumber(sustainedMax, "mph")} at ${sustainedTimeText}; maximum gust is ${displayNumber(gustMax, "mph")} at ${gustTimeText}. Comparison: sustained ${sustainedRule}; gust ${gustRule}; exact rule result: ${status}.`;
 
         return {
           status,
@@ -1866,7 +1875,12 @@
           status = "Go";
         }
         const timeText = times.map((timestamp) => formatLocalTimestamp(timestamp, timezone)).join("; ");
-        const reason = `Concrete: minimum temperature is ${displayNumber(minimum, "°F")} at ${timeText}; T_nogo = ${thresholds.concreteNoGo} °F, T_caut = ${thresholds.concreteCaution} °F; exact rule result: ${status}.`;
+        const comparison = minimum <= thresholds.concreteNoGo
+          ? `<= ${thresholds.concreteNoGo} °F`
+          : (minimum <= thresholds.concreteCaution
+            ? `> ${thresholds.concreteNoGo} °F and <= ${thresholds.concreteCaution} °F`
+            : `> ${thresholds.concreteCaution} °F`);
+        const reason = `Concrete: minimum temperature is ${displayNumber(minimum, "°F")} at ${timeText}; comparison is ${comparison}; T_nogo = ${thresholds.concreteNoGo} °F, T_caut = ${thresholds.concreteCaution} °F; exact rule result: ${status}.`;
 
         return {
           status,
@@ -1901,7 +1915,12 @@
           status = "Go";
         }
         const timeText = times.map((timestamp) => formatLocalTimestamp(timestamp, timezone)).join("; ");
-        const reason = `Roofing: maximum hourly precipitation probability is ${displayNumber(maximum, "%")} at ${timeText}; P_caut = ${thresholds.roofingCaution}%, P_nogo = ${thresholds.roofingNoGo}%; exact rule result: ${status}.`;
+        const comparison = maximum >= thresholds.roofingNoGo
+          ? `>= ${thresholds.roofingNoGo}%`
+          : (maximum >= thresholds.roofingCaution
+            ? `>= ${thresholds.roofingCaution}% and < ${thresholds.roofingNoGo}%`
+            : `< ${thresholds.roofingCaution}%`);
+        const reason = `Roofing: maximum hourly precipitation probability is ${displayNumber(maximum, "%")} at ${timeText}; comparison is ${comparison}; P_caut = ${thresholds.roofingCaution}%, P_nogo = ${thresholds.roofingNoGo}%; exact rule result: ${status}.`;
 
         return {
           status,
@@ -1923,6 +1942,82 @@
           concreteNoGo: readNumber(elements.concreteNoGo),
           roofingCaution: readNumber(elements.roofingCaution),
           roofingNoGo: readNumber(elements.roofingNoGo)
+        };
+      }
+
+      function runValidationFixture() {
+        const thresholds = {
+          craneLimit: 20,
+          concreteCaution: 40,
+          concreteNoGo: 32,
+          roofingCaution: 30,
+          roofingNoGo: 60
+        };
+        const sample = (windSpeed, windGust, temperature, precipitationProbability, timestamp = 0) => ({
+          timestamp,
+          windSpeed,
+          windGust,
+          temperature,
+          precipitationProbability
+        });
+
+        const checks = {};
+        checks.craneGo = calculateCrane([sample(14.999, 20, 50, 0, 1000)], thresholds, "UTC").status;
+        checks.craneSustainedCaution = calculateCrane([sample(15, 20, 50, 0, 1000)], thresholds, "UTC").status;
+        checks.craneSustainedNoGo = calculateCrane([sample(20, 20, 50, 0, 1000)], thresholds, "UTC").status;
+        checks.craneGustCaution = calculateCrane([sample(10, 20.001, 50, 0, 1000)], thresholds, "UTC").status;
+        checks.craneGustNoGo = calculateCrane([sample(10, 25, 50, 0, 1000)], thresholds, "UTC").status;
+        checks.craneTies = calculateCrane([
+          sample(20, 25, 50, 0, 1000),
+          sample(20, 25, 50, 0, 2000)
+        ], thresholds, "UTC");
+
+        checks.concreteGo = calculateConcrete([sample(10, 10, 40.0001, 0, 1000)], thresholds, "UTC").status;
+        checks.concreteCautionBoundary = calculateConcrete([sample(10, 10, 40, 0, 1000)], thresholds, "UTC").status;
+        checks.concreteNoGoBoundary = calculateConcrete([sample(10, 10, 32, 0, 1000)], thresholds, "UTC").status;
+        checks.roofingGo = calculateRoofing([sample(10, 10, 50, 29.999, 1000)], thresholds, "UTC").status;
+        checks.roofingCautionBoundary = calculateRoofing([sample(10, 10, 50, 30, 1000)], thresholds, "UTC").status;
+        checks.roofingNoGoBoundary = calculateRoofing([sample(10, 10, 50, 60, 1000)], thresholds, "UTC").status;
+        checks.missingCrane = calculateCrane([sample(null, 10, 50, 0, 1000)], thresholds, "UTC").status;
+        checks.missingConcrete = calculateConcrete([sample(10, 10, null, 0, 1000)], thresholds, "UTC").status;
+        checks.missingRoofing = calculateRoofing([sample(10, 10, 50, null, 1000)], thresholds, "UTC").status;
+
+        const partialFixture = {
+          timezone: "America/Denver",
+          hourly: {
+            time: [1795417200, 1795471200, 1795474800],
+            temperature_2m: [35, 47.2, 45.8],
+            wind_speed_10m: [1, 4.6, 6.1],
+            wind_gusts_10m: [1, 4.9, 8.1],
+            precipitation_probability: [0, 2, 1]
+          }
+        };
+        const partial = normalizeForecast(partialFixture, new Date(1795471200000));
+
+        const passed =
+          checks.craneGo === "Go" &&
+          checks.craneSustainedCaution === "Caution" &&
+          checks.craneSustainedNoGo === "No-Go" &&
+          checks.craneGustCaution === "Caution" &&
+          checks.craneGustNoGo === "No-Go" &&
+          checks.craneTies.timestamps.sustainedTimes.length === 2 &&
+          checks.craneTies.timestamps.gustTimes.length === 2 &&
+          checks.concreteGo === "Go" &&
+          checks.concreteCautionBoundary === "Caution" &&
+          checks.concreteNoGoBoundary === "No-Go" &&
+          checks.roofingGo === "Go" &&
+          checks.roofingCautionBoundary === "Caution" &&
+          checks.roofingNoGoBoundary === "No-Go" &&
+          checks.missingCrane === "Unavailable" &&
+          checks.missingConcrete === "Unavailable" &&
+          checks.missingRoofing === "Unavailable" &&
+          partial.every((day) => day.samples.length <= 24);
+
+        return {
+          passed,
+          checks,
+          partialDaySampleCount: partial[0].samples.length,
+          partialDateCount: partial.length
         };
       }
 
@@ -2142,6 +2237,9 @@
           normalizedDays,
           dailyActivityResults
         };
+        window.JobsiteWeatherStage5 = {
+          runValidationFixture
+        };
         renderStage4();
       }
 
@@ -2211,7 +2309,7 @@
           elements.forecastSamples.textContent = `Hourly records: ${responseInfo.hourlyCount}`;
 
           const missingMessage = responseInfo.missingValues
-            ? ` ${responseInfo.missingValues} hourly values are missing; affected ratings will be unavailable in Stage 3.`
+            ? ` ${responseInfo.missingValues} hourly values are missing; affected activity ratings will be unavailable.`
             : "";
           setForecastState(
             "success",

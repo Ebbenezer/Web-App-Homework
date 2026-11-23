@@ -82,7 +82,7 @@ This rule uses hourly precipitation probability only; it does not evaluate preci
 - **Initial open state:** Start with the default Provo-area coordinates and thresholds, show a loading state while fetching the forecast, then show the calendar and select the earliest date with a **Caution** or **No-Go** activity; if none exists, select the first date. Show only per-activity statuses, not an overall-day status.
 
 ## Validation
-Validation is **pending implementation and capture of a forecast fixture**; do not record fabricated values. Before treating a build as validated:
+The validation record is maintained in `VALIDATION.md` using a captured Open-Meteo fixture and a contextual NWS comparison. Before treating a build as validated:
 
 1. Record the site name, `lat`, `lon`, jobsite timezone, target local date, forecast retrieval time, and exact Open-Meteo request/units.
 2. Save every hourly sample in the evaluated window with timestamp, `wind_speed_10m` (`mph`), `wind_gusts_10m` (`mph`), `temperature_2m` (`°F`), and `precipitation_probability` (`%`). Include each timestamp's local offset where relevant.
