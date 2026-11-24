@@ -1015,6 +1015,110 @@
       color: var(--ink);
     }
 
+    .handoff-panel {
+      padding: 20px;
+    }
+
+    .handoff-notice {
+      margin: 0 0 12px;
+      border-left: 4px solid #d29a39;
+      border-radius: 6px;
+      background: #fffaf0;
+      color: #66512a;
+      font-size: 0.74rem;
+      line-height: 1.5;
+      padding: 9px 11px;
+    }
+
+    .handoff-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .handoff-actions button {
+      min-height: 38px;
+      border: 1px solid #bfcec2;
+      border-radius: 9px;
+      background: #f7faf7;
+      color: var(--ink);
+      cursor: pointer;
+      font: inherit;
+      font-size: 0.74rem;
+      font-weight: 800;
+      padding: 0 12px;
+    }
+
+    .handoff-actions button:focus-visible {
+      outline: 3px solid rgba(210, 154, 57, 0.65);
+      outline-offset: 2px;
+    }
+
+    .handoff-actions button:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+    }
+
+    .handoff-message {
+      min-height: 1.4em;
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 0.7rem;
+    }
+
+    .handoff-message.is-error {
+      color: var(--red);
+      font-weight: 750;
+    }
+
+    .handoff-text {
+      display: block;
+      width: 100%;
+      min-height: 360px;
+      border: 1px solid #dbe4de;
+      border-radius: 9px;
+      background: #fcfdfc;
+      color: var(--ink);
+      font: 0.7rem/1.5 ui-monospace, SFMono-Regular, Consolas, monospace;
+      padding: 12px;
+      resize: vertical;
+      white-space: pre;
+    }
+
+    .handoff-text:focus-visible {
+      outline: 3px solid rgba(210, 154, 57, 0.55);
+      outline-offset: 2px;
+    }
+
+    .handoff-print {
+      display: none;
+    }
+
+    @media print {
+      @page {
+        margin: 14mm;
+      }
+
+      body > * {
+        display: none !important;
+      }
+
+      #handoff-print {
+        display: block !important;
+        position: static;
+        width: 100%;
+        color: #111;
+      }
+
+      #handoff-print pre {
+        margin: 0;
+        font: 9pt/1.4 Consolas, "Courier New", monospace;
+        overflow-wrap: anywhere;
+        white-space: pre-wrap;
+      }
+    }
+
     .window-empty,
     .window-message {
       margin: 0;
@@ -1666,6 +1770,23 @@
           </div>
         </section>
 
+        <section id="handoff-panel" class="panel handoff-panel" aria-labelledby="handoff-heading">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Construction handoff</p>
+              <h2 id="handoff-heading">Shift Handoff Snapshot</h2>
+              <p>Share the selected date's source-attributed forecast details with the next shift.</p>
+            </div>
+          </div>
+          <p id="handoff-notice" class="handoff-notice">The snapshot is a planning aid, not authorization or a safety determination.</p>
+          <div class="handoff-actions">
+            <button id="copy-handoff" type="button" disabled>Copy plain-text snapshot</button>
+            <button id="print-handoff" type="button" disabled>Print / Save PDF</button>
+          </div>
+          <p id="handoff-message" class="handoff-message" role="status" aria-live="polite">Waiting for forecast data.</p>
+          <label class="field-label" for="handoff-text">Plain-text handoff snapshot</label>
+          <textarea id="handoff-text" class="handoff-text" readonly spellcheck="false" aria-describedby="handoff-notice handoff-message">Waiting for forecast data.</textarea>
+        </section>
         <section class="panel selected-day-panel" aria-labelledby="selected-day-heading">
           <div class="section-heading selected-day-heading">
             <div>
@@ -1720,6 +1841,9 @@
       </div>
     </main>
   </div>
+  <section id="handoff-print" class="handoff-print" aria-label="Printable Shift Handoff Snapshot">
+    <pre id="handoff-print-text"></pre>
+  </section>
   <script>
     (() => {
       const defaultLocation = { lat: 40.2338, lon: -111.6585 };
@@ -1782,7 +1906,13 @@
         windowEnd: document.getElementById("window-end"),
         windowDuration: document.getElementById("window-duration"),
         windowMessage: document.getElementById("window-message"),
-        windowResults: document.getElementById("window-results")
+        windowResults: document.getElementById("window-results"),
+        handoffText: document.getElementById("handoff-text"),
+        handoffPrintText: document.getElementById("handoff-print-text"),
+        handoffNotice: document.getElementById("handoff-notice"),
+        handoffMessage: document.getElementById("handoff-message"),
+        copyHandoff: document.getElementById("copy-handoff"),
+        printHandoff: document.getElementById("print-handoff")
       };
 
       let map = null;
@@ -2510,6 +2640,165 @@
         `).join("");
       }
 
+      function configuredThresholdText(thresholds) {
+        const value = (number, unit) => {
+          if (!Number.isFinite(number)) {
+            return "Not entered";
+          }
+          return unit === "%" ? `${number}%` : `${number} ${unit}`;
+        };
+        return [
+          `Crane: W_max = ${value(thresholds.craneLimit, "mph")}`,
+          `Concrete: T_caut = ${value(thresholds.concreteCaution, "°F")}; T_nogo = ${value(thresholds.concreteNoGo, "°F")}`,
+          `Roofing: P_caut = ${value(thresholds.roofingCaution, "%")}; P_nogo = ${value(thresholds.roofingNoGo, "%")}`
+        ];
+      }
+
+      function snapshotHourlyValue(value, unit) {
+        return value === null || value === undefined ? "Unavailable" : displayNumber(value, unit);
+      }
+
+      function buildHandoffSnapshot(day, dailyResults) {
+        const activities = [
+          ["Crane Lifts", dailyResults.crane],
+          ["Concrete Pours", dailyResults.concrete],
+          ["Roofing", dailyResults.roofing]
+        ];
+        const unavailable = activities.filter(([, result]) => result.status === "Unavailable").map(([name]) => name);
+        const resultNotice = unavailable.length
+          ? `One or more activity results are Unavailable (${unavailable.join(", ")}). Unavailable results below are not successful forecast evidence.`
+          : "All three activity results are available; review each activity independently.";
+        const units = Object.entries(forecastData.hourly_units || {})
+          .map(([field, unit]) => `${field}: ${unit}`)
+          .join("; ");
+        const elevation = Number.isFinite(forecastData.elevation)
+          ? `${forecastData.elevation} m`
+          : "Unavailable (not returned)";
+        const thresholds = configuredThresholdText(readThresholdConfig());
+        const lines = [
+          "SHIFT HANDOFF SNAPSHOT",
+          `Selected local date: ${formatShortDate(day.key)}`,
+          `Forecast evidence notice: ${resultNotice}`,
+          "Planning aid only. This snapshot is not authorization, safety certification, or a safety determination.",
+          "Each activity is independent; no combined day status is calculated.",
+          "",
+          "LOCATION AND SOURCE",
+          `Jobsite: ${elements.jobsiteHeading.textContent}`,
+          `Jobsite coordinates used for the loaded forecast: ${elements.forecastCoordinates.textContent}`,
+          `Forecast response coordinates: ${forecastData.latitude}, ${forecastData.longitude}`,
+          `Jobsite timezone: ${day.timezone}`,
+          `Forecast retrieved: ${elements.forecastRetrieved.textContent}`,
+          `Exact Open-Meteo request: ${elements.validationRequest.textContent}`,
+          `Returned hourly units: ${units || "Unavailable"}`,
+          `Source elevation: ${elevation}`,
+          "",
+          "CONFIGURED THRESHOLD INPUTS",
+          ...thresholds,
+          "",
+          "ACTIVITY RESULTS"
+        ];
+
+        activities.forEach(([name, result]) => {
+          const timestamps = governingTimestampText(result, day.timezone).replace(/<br\s*\/?>/gi, "\n");
+          lines.push(
+            "",
+            `--- ${name} ---`,
+            `Status: ${result.status}`,
+            `Governing metric: ${result.metric}`,
+            `Governing value: ${governingValueText(result)}`,
+            `Governing local timestamp(s): ${timestamps}`,
+            `Thresholds shown in the app: ${thresholdText(result)}`,
+            `Reason: ${result.reason}`
+          );
+        });
+
+        lines.push(
+          "",
+          "SELECTED-DATE HOURLY FORECAST",
+          "Local timestamp | UTC offset | Unix timestamp | Sustained wind at 10 m (mph) | Gust at 10 m (mph) | Temperature at 2 m (°F) | Hourly precipitation probability (%)"
+        );
+        if (day.samples.length === 0) {
+          lines.push("No included hourly samples are available for this date.");
+        } else {
+          day.samples.forEach((sample) => {
+            lines.push([
+              formatLocalTimestamp(sample.timestamp, day.timezone),
+              formatUtcOffset(sample.timestamp, day.timezone),
+              String(Math.round(sample.timestamp / 1000)),
+              snapshotHourlyValue(sample.windSpeed, "mph"),
+              snapshotHourlyValue(sample.windGust, "mph"),
+              snapshotHourlyValue(sample.temperature, "°F"),
+              snapshotHourlyValue(sample.precipitationProbability, "%")
+            ].join(" | "));
+          });
+        }
+
+        return lines.join("\n");
+      }
+
+      function setHandoffMessage(message, isError = false) {
+        elements.handoffMessage.textContent = message;
+        elements.handoffMessage.classList.toggle("is-error", isError);
+      }
+
+      function updateHandoffSnapshot() {
+        const dayIndex = normalizedDays.findIndex((day) => day.key === selectedDateKey);
+        const day = dayIndex >= 0 ? normalizedDays[dayIndex] : null;
+        const dailyResults = dayIndex >= 0 ? dailyActivityResults[dayIndex] : null;
+        const available = Boolean(forecastData && day && dailyResults);
+        elements.copyHandoff.disabled = !available;
+        elements.printHandoff.disabled = !available;
+        if (!available) {
+          const message = "Snapshot unavailable until forecast data is loaded.";
+          elements.handoffNotice.textContent = "The snapshot is a planning aid, not authorization or a safety determination. No current forecast retrieval is available.";
+          elements.handoffText.value = message;
+          elements.handoffPrintText.textContent = message;
+          setHandoffMessage(message);
+          return;
+        }
+
+        const snapshot = buildHandoffSnapshot(day, dailyResults);
+        elements.handoffNotice.textContent =
+          `Snapshot reflects a forecast retrieved at ${elements.forecastRetrieved.textContent}. Planning aid only; not authorization or a safety determination.`;
+        elements.handoffText.value = snapshot;
+        elements.handoffPrintText.textContent = snapshot;
+        const hasUnavailableActivity = [dailyResults.crane, dailyResults.concrete, dailyResults.roofing]
+          .some((result) => result.status === "Unavailable");
+        setHandoffMessage(
+          hasUnavailableActivity
+            ? "Snapshot ready with Unavailable activity results explicitly marked; those results are not successful forecast evidence."
+            : `Snapshot reflects the forecast retrieved at ${elements.forecastRetrieved.textContent}. Planning aid only.`
+        );
+      }
+
+      async function copyHandoffSnapshot() {
+        if (!forecastData || !elements.handoffText.value) {
+          setHandoffMessage("No forecast snapshot is available to copy.", true);
+          return;
+        }
+        try {
+          if (!navigator.clipboard || typeof navigator.clipboard.writeText !== "function") {
+            throw new Error("Clipboard access is unavailable in this browser context.");
+          }
+          await navigator.clipboard.writeText(elements.handoffText.value);
+          setHandoffMessage("Plain-text handoff snapshot copied.");
+        } catch (error) {
+          elements.handoffText.focus();
+          elements.handoffText.select();
+          const detail = error instanceof Error ? error.message : String(error);
+          setHandoffMessage(`${detail} The snapshot is selected; copy it manually.`, true);
+        }
+      }
+
+      function printHandoffSnapshot() {
+        if (!forecastData || !elements.handoffText.value) {
+          setHandoffMessage("No forecast snapshot is available to print.", true);
+          return;
+        }
+        updateHandoffSnapshot();
+        window.print();
+      }
+
       function findWorkingWindows(day, shiftStart, shiftEnd, minimumHours, thresholds) {
         const startTimestamp = localDateTimeToTimestamp(day.key, shiftStart, day.timezone);
         const endTimestamp = localDateTimeToTimestamp(day.key, shiftEnd, day.timezone);
@@ -2756,6 +3045,7 @@
           elements.selectedDayHeading.textContent = "Loading selected day";
           elements.selectedDayCaption.textContent = "Waiting for forecast data.";
           updateWindowFinder();
+          updateHandoffSnapshot();
           return;
         }
 
@@ -2804,6 +3094,7 @@
         elements.hourlyCaption.textContent = `${formatShortDate(day.key)} · ${day.timezone}`;
         renderHourlyTable(day);
         updateWindowFinder();
+        updateHandoffSnapshot();
       }
 
       function calculateAllActivities() {
@@ -3060,6 +3351,8 @@
         });
 
         elements.retryForecast.addEventListener("click", loadForecast);
+        elements.copyHandoff.addEventListener("click", copyHandoffSnapshot);
+        elements.printHandoff.addEventListener("click", printHandoffSnapshot);
         loadForecast();
       }
 
