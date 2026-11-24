@@ -207,6 +207,9 @@ The must-have forecast, calculation, calendar, and validation behaviors remain i
 **Rules and calculations:**
 - Evaluate one activity at a time and produce three separate lists: Crane Lifts, Concrete Pours, and Roofing.
 - Convert the shift start and end times to the selected date's local time.
+- The window-finder date is an independent input from the selected calendar day. Changing one does not change the other.
+- A shift is a same-local-date interval; the end time must be later than the start time. Overnight shifts are not supported.
+- If a local time is ambiguous during a daylight-saving fall-back, use its earlier occurrence. Reject nonexistent local times during a spring-forward gap with a visible input error.
 - Include only complete hourly forecast samples whose full hour falls entirely inside the selected shift.
 - Exclude partial overlapping edge hours rather than treating a partial hour as a full usable hour.
 - If the selected shift is shorter than one complete hour or crosses no complete included forecast hour, return an explicit no-window result.

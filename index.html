@@ -944,6 +944,90 @@
       line-height: 1.5;
     }
 
+    .window-panel {
+      padding: 20px;
+    }
+
+    .window-controls {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .window-controls input {
+      width: 100%;
+      min-width: 0;
+      height: 40px;
+      border: 1px solid #dbe4de;
+      border-radius: 9px;
+      background: #f8faf8;
+      color: var(--ink);
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 0 9px;
+    }
+
+    .window-controls input:focus-visible {
+      outline: 3px solid rgba(210, 154, 57, 0.65);
+      outline-offset: 2px;
+    }
+
+    .window-controls input.is-invalid {
+      border-color: #b94b3a;
+      background: #fff9f7;
+    }
+
+    .window-controls .input-error:not([hidden]) {
+      display: block;
+    }
+
+    .window-results {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .window-result {
+      min-width: 0;
+      border: 1px solid #e1e9e3;
+      border-radius: 11px;
+      background: #fcfdfc;
+      padding: 12px;
+    }
+
+    .window-result h3 {
+      margin: 0 0 8px;
+      font-size: 0.78rem;
+    }
+
+    .window-item {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid #edf1ed;
+      color: #52635c;
+      font-size: 0.7rem;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+    }
+
+    .window-item strong {
+      color: var(--ink);
+    }
+
+    .window-empty,
+    .window-message {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.72rem;
+      line-height: 1.5;
+    }
+
+    .window-message.is-error {
+      color: var(--red);
+      font-weight: 750;
+    }
+
     .hourly-panel {
       overflow: hidden;
     }
@@ -1136,6 +1220,14 @@
       .activity-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
       }
+
+      .window-controls {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .window-results {
+        grid-template-columns: minmax(0, 1fr);
+      }
     }
 
     @media (max-width: 600px) {
@@ -1237,6 +1329,10 @@
       }
 
       .activity-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .window-controls {
         grid-template-columns: minmax(0, 1fr);
       }
 
@@ -1532,6 +1628,44 @@
           </div>
         </section>
 
+        <section class="panel window-panel" aria-labelledby="window-heading">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Shift planning</p>
+              <h2 id="window-heading">Working-window finder</h2>
+              <p>Find consecutive forecast hours rated Go or Caution for each activity. Partial edge hours are excluded.</p>
+            </div>
+          </div>
+          <div class="window-controls">
+            <label for="window-date">
+              <span class="field-label">Local forecast date</span>
+              <input id="window-date" type="date" disabled aria-describedby="window-message window-date-error">
+              <span class="input-error" id="window-date-error" hidden></span>
+            </label>
+            <label for="window-start">
+              <span class="field-label">Shift start</span>
+              <input id="window-start" type="time" value="07:00" disabled aria-describedby="window-message window-start-error">
+              <span class="input-error" id="window-start-error" hidden></span>
+            </label>
+            <label for="window-end">
+              <span class="field-label">Shift end</span>
+              <input id="window-end" type="time" value="17:00" disabled aria-describedby="window-message window-end-error">
+              <span class="input-error" id="window-end-error" hidden></span>
+            </label>
+            <label for="window-duration">
+              <span class="field-label">Minimum full hours</span>
+              <input id="window-duration" type="number" min="1" max="12" step="1" value="4" disabled aria-describedby="window-message window-duration-error">
+              <span class="input-error" id="window-duration-error" hidden></span>
+            </label>
+          </div>
+          <p class="window-message" id="window-message" role="status" aria-live="polite">Waiting for forecast data.</p>
+          <div class="window-results" id="window-results" aria-live="polite">
+            <section class="window-result"><h3>Crane Lifts</h3><p class="window-empty">Waiting for forecast data.</p></section>
+            <section class="window-result"><h3>Concrete Pours</h3><p class="window-empty">Waiting for forecast data.</p></section>
+            <section class="window-result"><h3>Roofing</h3><p class="window-empty">Waiting for forecast data.</p></section>
+          </div>
+        </section>
+
         <section class="panel selected-day-panel" aria-labelledby="selected-day-heading">
           <div class="section-heading selected-day-heading">
             <div>
@@ -1642,7 +1776,13 @@
         hourlyCaption: document.getElementById("hourly-caption"),
         hourlyTableBody: document.getElementById("hourly-table-body"),
         validationRequest: document.getElementById("validation-request"),
-        validationSourceMetadata: document.getElementById("validation-source-metadata")
+        validationSourceMetadata: document.getElementById("validation-source-metadata"),
+        windowDate: document.getElementById("window-date"),
+        windowStart: document.getElementById("window-start"),
+        windowEnd: document.getElementById("window-end"),
+        windowDuration: document.getElementById("window-duration"),
+        windowMessage: document.getElementById("window-message"),
+        windowResults: document.getElementById("window-results")
       };
 
       let map = null;
@@ -1868,6 +2008,83 @@
           minute: "2-digit",
           timeZoneName: "short"
         }).format(new Date(timestamp));
+      }
+
+      function getZonedDateParts(timestamp, timezone) {
+        const parts = new Intl.DateTimeFormat("en-US", {
+          timeZone: timezone,
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hourCycle: "h23"
+        }).formatToParts(new Date(timestamp));
+        const values = {};
+        parts.forEach((part) => {
+          if (part.type !== "literal") {
+            values[part.type] = Number(part.value);
+          }
+        });
+        return values;
+      }
+
+      function localDateTimeToTimestamp(dateKey, timeText, timezone) {
+        const dateMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateKey);
+        const timeMatch = /^(\d{2}):(\d{2})$/.exec(timeText);
+        if (!dateMatch || !timeMatch) {
+          return null;
+        }
+        const year = Number(dateMatch[1]);
+        const month = Number(dateMatch[2]);
+        const day = Number(dateMatch[3]);
+        const hour = Number(timeMatch[1]);
+        const minute = Number(timeMatch[2]);
+        if (month < 1 || month > 12 || day < 1 || day > 31 || hour > 23 || minute > 59) {
+          return null;
+        }
+
+        const desired = Date.UTC(year, month - 1, day, hour, minute);
+        const validDate = new Date(desired);
+        if (
+          validDate.getUTCFullYear() !== year ||
+          validDate.getUTCMonth() !== month - 1 ||
+          validDate.getUTCDate() !== day
+        ) {
+          return null;
+        }
+
+        const offsets = new Set();
+        for (let hours = -36; hours <= 36; hours += 6) {
+          const probe = desired + hours * 60 * 60 * 1000;
+          const local = getZonedDateParts(probe, timezone);
+          const representedAsUtc = Date.UTC(
+            local.year,
+            local.month - 1,
+            local.day,
+            local.hour,
+            local.minute,
+            local.second
+          );
+          offsets.add(representedAsUtc - Math.floor(probe / 1000) * 1000);
+        }
+
+        const matches = [];
+        offsets.forEach((offset) => {
+          const candidate = desired - offset;
+          const local = getZonedDateParts(candidate, timezone);
+          if (
+            local.year === year &&
+            local.month === month &&
+            local.day === day &&
+            local.hour === hour &&
+            local.minute === minute
+          ) {
+            matches.push(candidate);
+          }
+        });
+        return matches.length ? Math.min(...matches) : null;
       }
 
       function formatUtcOffset(timestamp, timezone) {
@@ -2293,6 +2510,238 @@
         `).join("");
       }
 
+      function findWorkingWindows(day, shiftStart, shiftEnd, minimumHours, thresholds) {
+        const startTimestamp = localDateTimeToTimestamp(day.key, shiftStart, day.timezone);
+        const endTimestamp = localDateTimeToTimestamp(day.key, shiftEnd, day.timezone);
+        if (startTimestamp === null || endTimestamp === null || endTimestamp <= startTimestamp) {
+          return {
+            windows: [],
+            reason: "Enter valid local shift times with an end time later than the start time."
+          };
+        }
+
+        const hourMs = 60 * 60 * 1000;
+        const samples = day.samples
+          .filter((sample) => sample.timestamp >= startTimestamp && sample.timestamp + hourMs <= endTimestamp)
+          .sort((a, b) => a.timestamp - b.timestamp);
+        if (samples.length === 0) {
+          return {
+            windows: [],
+            reason: day.samples.length === 0
+              ? "No included forecast hours are available for this date."
+              : "No complete forecast hour falls entirely inside the selected shift; partial edge hours are excluded."
+          };
+        }
+
+        const assess = {
+          crane: (samples) => calculateCrane(samples, thresholds, day.timezone),
+          concrete: (samples) => calculateConcrete(samples, thresholds, day.timezone),
+          roofing: (samples) => calculateRoofing(samples, thresholds, day.timezone)
+        };
+        const outcomes = {};
+
+        Object.keys(assess).forEach((activity) => {
+          const windows = [];
+          let run = [];
+          let encounteredNoGo = false;
+          let encounteredUnavailable = false;
+          let encounteredGap = false;
+
+          const finishRun = () => {
+            if (run.length >= minimumHours) {
+              const results = assess[activity](run, thresholds, day.timezone);
+              windows.push({
+                samples: run,
+                status: run.some((sample) => assess[activity]( [sample], thresholds, day.timezone).status === "Caution")
+                  ? "Caution"
+                  : "Go",
+                result: results,
+                start: run[0].timestamp,
+                end: run[run.length - 1].timestamp + hourMs,
+                hours: run.length
+              });
+            }
+            run = [];
+          };
+
+          samples.forEach((sample) => {
+            if (run.length && sample.timestamp !== run[run.length - 1].timestamp + hourMs) {
+              encounteredGap = true;
+              finishRun();
+            }
+
+            const result = assess[activity]([sample], thresholds, day.timezone);
+            if (result.status === "Go" || result.status === "Caution") {
+              run.push(sample);
+            } else {
+              if (result.status === "No-Go") {
+                encounteredNoGo = true;
+              } else {
+                encounteredUnavailable = true;
+              }
+              finishRun();
+            }
+          });
+          finishRun();
+
+          const reasons = [];
+          if (encounteredNoGo) {
+            reasons.push("No-Go hours interrupt qualifying sequences");
+          }
+          if (encounteredUnavailable || encounteredGap) {
+            reasons.push("missing or unavailable forecast hours interrupt qualifying sequences");
+          }
+          if (windows.length === 0 && samples.length < minimumHours) {
+            reasons.push(`the selected shift contains only ${samples.length} complete forecast hour${samples.length === 1 ? "" : "s"}, fewer than the ${minimumHours} required`);
+          }
+          if (windows.length === 0 && !reasons.length) {
+            reasons.push(`no uninterrupted sequence reaches ${minimumHours} full forecast hours`);
+          } else if (windows.length === 0) {
+            reasons.push(`no uninterrupted sequence reaches ${minimumHours} full forecast hours`);
+          }
+          outcomes[activity] = {
+            windows,
+            reason: windows.length ? "" : reasons.join("; ")
+          };
+        });
+
+        return { windows: outcomes, includedHours: samples.length };
+      }
+
+      function renderWindowActivity(title, activityResult, timezone) {
+        if (!activityResult.windows.length) {
+          return `<section class="window-result"><h3>${title}</h3><p class="window-empty">${activityResult.reason}</p></section>`;
+        }
+        const items = activityResult.windows.map((window) => {
+          const result = window.result;
+          let evidence;
+          if (result.metric === "Maximum sustained wind and gust") {
+            evidence = `Maximum sustained wind ${displayNumber(result.governingValue.sustainedMax, "mph")} at ${timestampList(result.timestamps.sustainedTimes, timezone)}; maximum gust ${displayNumber(result.governingValue.gustMax, "mph")} at ${timestampList(result.timestamps.gustTimes, timezone)}.`;
+          } else if (result.metric === "Minimum temperature") {
+            evidence = `Minimum temperature ${displayNumber(result.governingValue, "°F")} at ${timestampList(result.timestamps, timezone)}.`;
+          } else {
+            evidence = `Maximum hourly precipitation probability ${displayNumber(result.governingValue, "%")} at ${timestampList(result.timestamps, timezone)}.`;
+          }
+          return `
+            <div class="window-item">
+              <strong class="status ${statusClass(window.status)}">${window.status}</strong><br>
+              ${formatLocalTimestamp(window.start, timezone)} – ${formatLocalTimestamp(window.end, timezone)}<br>
+              ${window.hours} full forecast hour${window.hours === 1 ? "" : "s"}<br>
+              ${evidence}
+            </div>
+          `;
+        }).join("");
+        return `<section class="window-result"><h3>${title}</h3>${items}</section>`;
+      }
+
+      function setWindowInputError(input, message) {
+        const errorElement = document.getElementById(`${input.id}-error`);
+        input.setAttribute("aria-invalid", message ? "true" : "false");
+        input.classList.toggle("is-invalid", Boolean(message));
+        errorElement.textContent = message || "";
+        errorElement.hidden = !message;
+      }
+
+      function updateWindowFinder() {
+        const inputs = [
+          elements.windowDate,
+          elements.windowStart,
+          elements.windowEnd,
+          elements.windowDuration
+        ];
+        inputs.forEach((input) => setWindowInputError(input, ""));
+        const hasForecast = normalizedDays.length > 0 && dailyActivityResults.length > 0;
+        const validThresholds = hasForecast && validateThresholds();
+        inputs.forEach((input) => {
+          input.disabled = !hasForecast || !validThresholds;
+        });
+
+        if (!hasForecast) {
+          elements.windowMessage.textContent = "Waiting for forecast data.";
+          elements.windowMessage.classList.remove("is-error");
+          elements.windowResults.innerHTML = [
+            ["Crane Lifts", "Waiting for forecast data."],
+            ["Concrete Pours", "Waiting for forecast data."],
+            ["Roofing", "Waiting for forecast data."]
+          ].map(([title, message]) => `<section class="window-result"><h3>${title}</h3><p class="window-empty">${message}</p></section>`).join("");
+          return;
+        }
+
+        if (!validThresholds) {
+          elements.windowMessage.textContent = "Correct the invalid activity thresholds before finding working windows.";
+          elements.windowMessage.classList.add("is-error");
+          elements.windowResults.innerHTML = [
+            ["Crane Lifts", "Unavailable while thresholds are invalid."],
+            ["Concrete Pours", "Unavailable while thresholds are invalid."],
+            ["Roofing", "Unavailable while thresholds are invalid."]
+          ].map(([title, message]) => `<section class="window-result"><h3>${title}</h3><p class="window-empty">${message}</p></section>`).join("");
+          return;
+        }
+
+        const firstDate = normalizedDays[0].key;
+        const lastDate = normalizedDays[normalizedDays.length - 1].key;
+        elements.windowDate.min = firstDate;
+        elements.windowDate.max = lastDate;
+        if (!elements.windowDate.value || elements.windowDate.value < firstDate || elements.windowDate.value > lastDate) {
+          elements.windowDate.value = firstDate;
+        }
+
+        const selectedDate = elements.windowDate.value;
+        const day = normalizedDays.find((item) => item.key === selectedDate);
+        const minimumHours = Number(elements.windowDuration.value);
+        const start = elements.windowStart.value;
+        const end = elements.windowEnd.value;
+        if (!day) {
+          setWindowInputError(elements.windowDate, "Choose a date in the loaded seven-day forecast.");
+          elements.windowMessage.textContent = "Choose a local date within the seven-day forecast.";
+          elements.windowMessage.classList.add("is-error");
+          return;
+        }
+        if (!Number.isInteger(minimumHours) || minimumHours < 1 || minimumHours > 12) {
+          setWindowInputError(elements.windowDuration, "Enter a whole number from 1 to 12.");
+          elements.windowMessage.textContent = "Minimum duration must be a whole number from 1 to 12 full forecast hours.";
+          elements.windowMessage.classList.add("is-error");
+          return;
+        }
+
+        const shiftStart = localDateTimeToTimestamp(day.key, start, day.timezone);
+        const shiftEnd = localDateTimeToTimestamp(day.key, end, day.timezone);
+        if (shiftStart === null) {
+          setWindowInputError(elements.windowStart, "Enter a valid local time; times skipped by daylight-saving changes are unavailable.");
+        }
+        if (shiftEnd === null) {
+          setWindowInputError(elements.windowEnd, "Enter a valid local time; times skipped by daylight-saving changes are unavailable.");
+        } else if (shiftStart !== null && shiftEnd <= shiftStart) {
+          setWindowInputError(elements.windowEnd, "Shift end must be later than shift start on the selected date.");
+        }
+        if (shiftStart === null || shiftEnd === null || shiftEnd <= shiftStart) {
+          elements.windowMessage.textContent = "Correct the highlighted shift times.";
+          elements.windowMessage.classList.add("is-error");
+          return;
+        }
+
+        const thresholds = readThresholdConfig();
+        const results = findWorkingWindows(day, start, end, minimumHours, thresholds);
+        if (results.reason) {
+          elements.windowMessage.textContent = results.reason;
+          elements.windowMessage.classList.add("is-error");
+          elements.windowResults.innerHTML = [
+            ["Crane Lifts", results.reason],
+            ["Concrete Pours", results.reason],
+            ["Roofing", results.reason]
+          ].map(([title, message]) => `<section class="window-result"><h3>${title}</h3><p class="window-empty">${message}</p></section>`).join("");
+          return;
+        }
+
+        elements.windowMessage.textContent =
+          `${formatShortDate(day.key)} · ${results.includedHours} complete forecast hour${results.includedHours === 1 ? "" : "s"} inside the shift · Go and Caution qualify.`;
+        elements.windowMessage.classList.remove("is-error");
+        elements.windowResults.innerHTML =
+          renderWindowActivity("Crane Lifts", results.windows.crane, day.timezone) +
+          renderWindowActivity("Concrete Pours", results.windows.concrete, day.timezone) +
+          renderWindowActivity("Roofing", results.windows.roofing, day.timezone);
+      }
+
       function selectDay(dateKey) {
         if (!normalizedDays.some((day) => day.key === dateKey)) {
           return;
@@ -2306,6 +2755,7 @@
           elements.weekGrid.innerHTML = '<article class="day-card"><div class="day-card-header"><span class="day-name">Loading</span><span class="day-date">Forecast</span></div><div class="rating-list"><div class="rating-line"><span>Crane</span><strong class="status pending">Unavailable</strong></div><div class="rating-line"><span>Concrete</span><strong class="status pending">Unavailable</strong></div><div class="rating-line"><span>Roofing</span><strong class="status pending">Unavailable</strong></div></div></article>';
           elements.selectedDayHeading.textContent = "Loading selected day";
           elements.selectedDayCaption.textContent = "Waiting for forecast data.";
+          updateWindowFinder();
           return;
         }
 
@@ -2353,6 +2803,7 @@
           renderActivityCard("Roofing", result.roofing, day.timezone);
         elements.hourlyCaption.textContent = `${formatShortDate(day.key)} · ${day.timezone}`;
         renderHourlyTable(day);
+        updateWindowFinder();
       }
 
       function calculateAllActivities() {
@@ -2393,6 +2844,10 @@
         };
         window.JobsiteWeatherStage5 = {
           runValidationFixture
+        };
+        window.JobsiteWeatherFeature1 = {
+          findWorkingWindows,
+          localDateTimeToTimestamp
         };
         renderStage4();
       }
@@ -2593,6 +3048,16 @@
           validateThresholds();
           calculateAllActivities();
         }));
+
+        [
+          elements.windowDate,
+          elements.windowStart,
+          elements.windowEnd,
+          elements.windowDuration
+        ].forEach((input) => {
+          input.addEventListener("input", updateWindowFinder);
+          input.addEventListener("change", updateWindowFinder);
+        });
 
         elements.retryForecast.addEventListener("click", loadForecast);
         loadForecast();
