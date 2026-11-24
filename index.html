@@ -1019,6 +1019,68 @@
       padding: 20px;
     }
 
+    .handoff-overview {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(220px, 0.7fr);
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      border: 1px solid #e1e9e3;
+      border-radius: 12px;
+      background: #f8faf8;
+      padding: 14px;
+    }
+
+    .handoff-overview p,
+    .handoff-overview strong {
+      margin: 0;
+    }
+
+    .handoff-overview-label,
+    .handoff-fact span,
+    .handoff-metric-label {
+      display: block;
+      color: var(--muted);
+      font-size: 0.62rem;
+      font-weight: 850;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .handoff-overview-date {
+      display: block;
+      margin-top: 3px !important;
+      color: var(--ink);
+      font-size: 1.1rem;
+      font-weight: 850;
+      letter-spacing: -0.02em;
+    }
+
+    .handoff-overview-site {
+      margin-top: 4px !important;
+      color: #53645b;
+      font-size: 0.75rem;
+      font-weight: 750;
+    }
+
+    .handoff-overview-meta {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .handoff-overview-meta > div {
+      min-width: 0;
+    }
+
+    .handoff-overview-meta strong {
+      display: block;
+      margin-top: 3px;
+      color: var(--ink);
+      font-size: 0.72rem;
+      overflow-wrap: anywhere;
+    }
+
     .handoff-notice {
       margin: 0 0 12px;
       border-left: 4px solid #d29a39;
@@ -1028,6 +1090,182 @@
       font-size: 0.74rem;
       line-height: 1.5;
       padding: 9px 11px;
+    }
+
+    .handoff-activity-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .handoff-placeholder {
+      grid-column: 1 / -1;
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.72rem;
+    }
+
+    .handoff-activity-card {
+      min-width: 0;
+      border: 1px solid #dfe7e1;
+      border-top: 4px solid #91a197;
+      border-radius: 11px;
+      background: #fff;
+      padding: 12px;
+    }
+
+    .handoff-activity-card[data-status="Go"] {
+      border-top-color: #3a8a62;
+    }
+
+    .handoff-activity-card[data-status="Caution"] {
+      border-top-color: #d29a39;
+    }
+
+    .handoff-activity-card[data-status="No-Go"] {
+      border-top-color: #bd5548;
+    }
+
+    .handoff-activity-card[data-status="Unavailable"] {
+      border-top-color: #75827b;
+    }
+
+    .handoff-activity-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .handoff-activity-top h3 {
+      margin: 2px 0 0;
+      color: var(--ink);
+      font-size: 0.85rem;
+      line-height: 1.3;
+    }
+
+    .handoff-value {
+      display: block;
+      margin-top: 4px;
+      color: var(--ink);
+      font-size: 1.08rem;
+      font-weight: 850;
+      letter-spacing: -0.025em;
+      overflow-wrap: anywhere;
+    }
+
+    .handoff-time-label {
+      margin: 12px 0 3px;
+      color: var(--muted);
+      font-size: 0.62rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .handoff-times,
+    .handoff-thresholds,
+    .handoff-reason p {
+      margin: 0;
+      color: #53645b;
+      font-size: 0.69rem;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+    }
+
+    .handoff-times {
+      white-space: pre-line;
+    }
+
+    .handoff-thresholds {
+      margin-top: 10px;
+      border-top: 1px solid #edf1ed;
+      padding-top: 8px;
+    }
+
+    .handoff-thresholds strong {
+      color: var(--ink);
+    }
+
+    .handoff-reason {
+      margin-top: 8px;
+      border-top: 1px solid #edf1ed;
+      padding-top: 7px;
+    }
+
+    .handoff-reason summary {
+      min-height: 28px;
+      color: #485e51;
+      cursor: pointer;
+      font-size: 0.68rem;
+      font-weight: 800;
+    }
+
+    .handoff-reason p {
+      margin-top: 5px;
+    }
+
+    .handoff-details-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .handoff-detail {
+      min-width: 0;
+      overflow: hidden;
+      border: 1px solid #e1e9e3;
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    .handoff-detail > summary {
+      min-height: 42px;
+      padding: 12px;
+      color: var(--ink);
+      cursor: pointer;
+      font-size: 0.72rem;
+      font-weight: 850;
+    }
+
+    .handoff-source-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      padding: 0 10px 10px;
+    }
+
+    .handoff-fact {
+      min-width: 0;
+      border: 1px solid #edf1ed;
+      border-radius: 8px;
+      padding: 9px;
+    }
+
+    .handoff-fact strong,
+    .handoff-fact code {
+      display: block;
+      margin-top: 4px;
+      color: var(--ink);
+      font-size: 0.68rem;
+      font-weight: 700;
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+      white-space: normal;
+    }
+
+    .handoff-fact code {
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
+
+    .handoff-table-wrap {
+      margin: 0 10px 10px;
+      max-width: calc(100% - 20px);
+      border: 1px solid #edf1ed;
+      border-radius: 8px;
     }
 
     .handoff-actions {
@@ -1072,10 +1310,27 @@
       font-weight: 750;
     }
 
+    .handoff-plain {
+      margin-top: 10px;
+      border: 1px solid #e1e9e3;
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    .handoff-plain summary {
+      min-height: 40px;
+      padding: 11px 12px;
+      color: #485e51;
+      cursor: pointer;
+      font-size: 0.7rem;
+      font-weight: 800;
+    }
+
     .handoff-text {
       display: block;
-      width: 100%;
-      min-height: 360px;
+      width: calc(100% - 20px);
+      min-height: 260px;
+      margin: 0 10px 10px;
       border: 1px solid #dbe4de;
       border-radius: 9px;
       background: #fcfdfc;
@@ -1095,6 +1350,34 @@
       display: none;
     }
 
+    .handoff-print h1 {
+      margin: 0;
+      color: var(--ink);
+      font-size: 1.4rem;
+    }
+
+    .handoff-print h2 {
+      margin: 16px 0 8px;
+      color: var(--ink);
+      font-size: 0.95rem;
+    }
+
+    .handoff-print-header {
+      margin-bottom: 10px;
+    }
+
+    .handoff-print-header > p:not(.eyebrow) {
+      margin: 4px 0 0;
+      color: #53645b;
+      font-size: 0.78rem;
+    }
+
+    .handoff-print-disclaimer {
+      margin-top: 12px;
+      color: #53645b;
+      font-size: 0.7rem;
+    }
+
     @media print {
       @page {
         margin: 14mm;
@@ -1111,11 +1394,38 @@
         color: #111;
       }
 
-      #handoff-print pre {
+      #handoff-print .handoff-activity-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      #handoff-print .handoff-activity-card,
+      #handoff-print .handoff-detail {
+        break-inside: avoid;
+      }
+
+      #handoff-print .handoff-table-wrap {
+        max-width: 100%;
         margin: 0;
-        font: 9pt/1.4 Consolas, "Courier New", monospace;
+        overflow: visible;
+      }
+
+      #handoff-print .hourly-table {
+        min-width: 0;
+        table-layout: fixed;
+      }
+
+      #handoff-print .hourly-table th,
+      #handoff-print .hourly-table td {
+        padding: 3px;
+        font-size: 6pt;
+        white-space: normal;
         overflow-wrap: anywhere;
-        white-space: pre-wrap;
+      }
+
+      #handoff-print .handoff-fact strong,
+      #handoff-print .handoff-fact code,
+      #handoff-print .handoff-reason p {
+        font-size: 8pt;
       }
     }
 
@@ -1332,6 +1642,10 @@
       .window-results {
         grid-template-columns: minmax(0, 1fr);
       }
+
+      .handoff-activity-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
     }
 
     @media (max-width: 600px) {
@@ -1379,6 +1693,16 @@
 
       .map-preview {
         height: 190px;
+      }
+
+      .handoff-overview {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .handoff-activity-grid,
+      .handoff-details-grid,
+      .handoff-source-grid {
+        grid-template-columns: minmax(0, 1fr);
       }
 
       .intro-topline {
@@ -1630,7 +1954,7 @@
             <p class="eyebrow" id="site-summary">Seven-day lookahead / Provo, Utah</p>
             <span class="mockup-pill">Planning inputs active</span>
           </div>
-          <h1 id="page-title">Weather work window</h1>
+          <h1 id="page-title">Weather Work Window</h1>
           <p class="intro-copy">Choose a jobsite and configure the project thresholds. The forecast is normalized and each activity is calculated from the exact hourly rules.</p>
           <div class="meta-row" aria-label="Forecast preview metadata">
             <span class="micro-pill">Open-Meteo forecast</span>
@@ -1668,8 +1992,177 @@
           </div>
         </section>
 
-        <details class="validation-panel" open>
-          <summary>Validation request and source context</summary>
+        <section class="panel week-panel" aria-labelledby="week-heading">
+          <div class="section-heading week-heading">
+            <div>
+              <p class="eyebrow">Weekly Activity Outlook</p>
+              <h2 id="week-heading">Activity ratings</h2>
+              <p>Select a local date to inspect each activity result.</p>
+            </div>
+            <span class="micro-pill">Calculations active</span>
+          </div>
+
+          <div class="week-grid" aria-label="Seven-day activity ratings">
+            <article class="day-card" aria-busy="true"><div class="day-card-header"><span class="day-name">Loading</span><span class="day-date">Forecast</span></div><div class="rating-list"><div class="rating-line"><span>Crane</span><strong class="status pending">Unavailable</strong></div><div class="rating-line"><span>Concrete</span><strong class="status pending">Unavailable</strong></div><div class="rating-line"><span>Roofing</span><strong class="status pending">Unavailable</strong></div></div></article>
+          </div>
+        </section>
+
+        <section class="panel hourly-panel" aria-labelledby="hourly-heading">
+          <div class="hourly-heading">
+            <h2 id="hourly-heading">Hourly Forecast</h2>
+            <p id="hourly-caption">Waiting for forecast data.</p>
+          </div>
+          <div class="table-wrap" id="hourly-table-wrap">
+            <table class="hourly-table">
+              <thead>
+                <tr>
+                  <th scope="col">Local timestamp</th>
+                  <th scope="col">Unix timestamp</th>
+                  <th scope="col">UTC offset</th>
+                  <th scope="col">Sustained wind at 10 m (mph)</th>
+                  <th scope="col">Gust at 10 m (mph)</th>
+                  <th scope="col">Temperature at 2 m (&deg;F)</th>
+                  <th scope="col">Hourly precipitation probability (%)</th>
+                </tr>
+              </thead>
+              <tbody id="hourly-table-body">
+                <tr><td colspan="5">Waiting for forecast data.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel selected-day-panel" aria-labelledby="selected-day-heading">
+          <div class="section-heading selected-day-heading">
+            <div>
+              <p class="eyebrow">Activity Details</p>
+              <h2 id="selected-day-heading">Loading selected day</h2>
+              <p id="selected-day-caption">Waiting for forecast data.</p>
+            </div>
+            <span class="micro-pill" id="selected-day-status">Unavailable</span>
+          </div>
+          <div id="activity-details" class="activity-grid" aria-live="polite">
+            <article class="activity-card">
+              <div class="activity-card-top"><h3>Crane Lifts</h3><strong class="status pending">Unavailable</strong></div>
+              <p class="activity-reason">Waiting for the forecast.</p>
+            </article>
+            <article class="activity-card">
+              <div class="activity-card-top"><h3>Concrete Pours</h3><strong class="status pending">Unavailable</strong></div>
+              <p class="activity-reason">Waiting for the forecast.</p>
+            </article>
+            <article class="activity-card">
+              <div class="activity-card-top"><h3>Roofing</h3><strong class="status pending">Unavailable</strong></div>
+              <p class="activity-reason">Waiting for the forecast.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="panel window-panel" aria-labelledby="window-heading">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Shift Planning</p>
+              <h2 id="window-heading">Working-Window Finder</h2>
+              <p>Find consecutive forecast hours rated Go or Caution for each activity. Partial edge hours are excluded.</p>
+            </div>
+          </div>
+          <div class="window-controls">
+            <label for="window-date">
+              <span class="field-label">Local forecast date</span>
+              <input id="window-date" type="date" disabled aria-describedby="window-message window-date-error">
+              <span class="input-error" id="window-date-error" hidden></span>
+            </label>
+            <label for="window-start">
+              <span class="field-label">Shift start</span>
+              <input id="window-start" type="time" value="07:00" disabled aria-describedby="window-message window-start-error">
+              <span class="input-error" id="window-start-error" hidden></span>
+            </label>
+            <label for="window-end">
+              <span class="field-label">Shift end</span>
+              <input id="window-end" type="time" value="17:00" disabled aria-describedby="window-message window-end-error">
+              <span class="input-error" id="window-end-error" hidden></span>
+            </label>
+            <label for="window-duration">
+              <span class="field-label">Minimum full hours</span>
+              <input id="window-duration" type="number" min="1" max="12" step="1" value="4" disabled aria-describedby="window-message window-duration-error">
+              <span class="input-error" id="window-duration-error" hidden></span>
+            </label>
+          </div>
+          <p class="window-message" id="window-message" role="status" aria-live="polite">Waiting for forecast data.</p>
+          <div class="window-results" id="window-results" aria-live="polite">
+            <section class="window-result"><h3>Crane Lifts</h3><p class="window-empty">Waiting for forecast data.</p></section>
+            <section class="window-result"><h3>Concrete Pours</h3><p class="window-empty">Waiting for forecast data.</p></section>
+            <section class="window-result"><h3>Roofing</h3><p class="window-empty">Waiting for forecast data.</p></section>
+          </div>
+        </section>
+
+        <section id="handoff-panel" class="panel handoff-panel" aria-labelledby="handoff-heading">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Construction handoff</p>
+              <h2 id="handoff-heading">Shift Handoff Snapshot</h2>
+              <p>A quick, per-activity briefing with source details ready when the crew needs them.</p>
+            </div>
+          </div>
+          <p id="handoff-notice" class="handoff-notice">The snapshot is a planning aid, not authorization or a safety determination.</p>
+          <div class="handoff-actions">
+            <button id="copy-handoff" type="button" disabled>Copy handoff details</button>
+            <button id="print-handoff" type="button" disabled>Print / Save PDF</button>
+          </div>
+          <p id="handoff-message" class="handoff-message" role="status" aria-live="polite">Waiting for forecast data.</p>
+          <div class="handoff-overview">
+            <div>
+              <span class="handoff-overview-label">Selected local work date</span>
+              <strong id="handoff-date" class="handoff-overview-date">Waiting for forecast</strong>
+              <p id="handoff-site" class="handoff-overview-site">Jobsite unavailable</p>
+            </div>
+            <div class="handoff-overview-meta">
+              <div><span class="handoff-overview-label">Jobsite timezone</span><strong id="handoff-timezone">Unavailable</strong></div>
+              <div><span class="handoff-overview-label">Forecast retrieved</span><strong id="handoff-retrieved">Not retrieved</strong></div>
+            </div>
+          </div>
+          <div id="handoff-activity-grid" class="handoff-activity-grid" aria-live="polite">
+            <article class="handoff-activity-card" data-status="Unavailable"><div class="handoff-activity-top"><h3>Crane Lifts</h3><span class="status pending">Unavailable</span></div><p>Waiting for forecast data.</p></article>
+            <article class="handoff-activity-card" data-status="Unavailable"><div class="handoff-activity-top"><h3>Concrete Pours</h3><span class="status pending">Unavailable</span></div><p>Waiting for forecast data.</p></article>
+            <article class="handoff-activity-card" data-status="Unavailable"><div class="handoff-activity-top"><h3>Roofing</h3><span class="status pending">Unavailable</span></div><p>Waiting for forecast data.</p></article>
+          </div>
+          <div class="handoff-details-grid">
+            <details id="handoff-source-details" class="handoff-detail">
+              <summary>Source and threshold details</summary>
+              <div id="handoff-source-grid" class="handoff-source-grid">
+                <p class="window-empty">Waiting for forecast data.</p>
+              </div>
+            </details>
+            <details id="handoff-hourly-details" class="handoff-detail">
+              <summary id="handoff-hourly-summary">Hourly forecast inputs</summary>
+              <div class="table-wrap handoff-table-wrap">
+                <table class="hourly-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Local timestamp</th>
+                      <th scope="col">UTC offset</th>
+                      <th scope="col">Unix timestamp</th>
+                      <th scope="col">Sustained wind at 10 m (mph)</th>
+                      <th scope="col">Gust at 10 m (mph)</th>
+                      <th scope="col">Temperature at 2 m (°F)</th>
+                      <th scope="col">Hourly precipitation probability (%)</th>
+                    </tr>
+                  </thead>
+                  <tbody id="handoff-hourly-body">
+                    <tr><td colspan="7">Waiting for forecast data.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </details>
+          </div>
+          <details id="handoff-plain-details" class="handoff-plain">
+            <summary>Plain-text version (manual-copy fallback)</summary>
+            <label class="field-label" for="handoff-text">Copy-ready handoff details</label>
+            <textarea id="handoff-text" class="handoff-text" readonly spellcheck="false" aria-describedby="handoff-notice handoff-message">Waiting for forecast data.</textarea>
+          </details>
+        </section>
+        <p class="disclaimer">Planning preview only. Follow approved site plans and safety procedures.</p>
+        <details class="validation-panel">
+          <summary>Validation request and sources context</summary>
           <div class="validation-grid">
             <div class="validation-detail">
               <span>Exact Open-Meteo request</span>
@@ -1716,134 +2209,10 @@
             </div>
           </details>
         </details>
-
-        <section class="panel week-panel" aria-labelledby="week-heading">
-          <div class="section-heading week-heading">
-            <div>
-              <p class="eyebrow">Weekly activity outlook</p>
-              <h2 id="week-heading">Activity ratings</h2>
-              <p>Select a local date to inspect each activity result.</p>
-            </div>
-            <span class="micro-pill">Calculations active</span>
-          </div>
-
-          <div class="week-grid" aria-label="Seven-day activity ratings">
-            <article class="day-card" aria-busy="true"><div class="day-card-header"><span class="day-name">Loading</span><span class="day-date">Forecast</span></div><div class="rating-list"><div class="rating-line"><span>Crane</span><strong class="status pending">Unavailable</strong></div><div class="rating-line"><span>Concrete</span><strong class="status pending">Unavailable</strong></div><div class="rating-line"><span>Roofing</span><strong class="status pending">Unavailable</strong></div></div></article>
-          </div>
-        </section>
-
-        <section class="panel window-panel" aria-labelledby="window-heading">
-          <div class="section-heading">
-            <div>
-              <p class="eyebrow">Shift planning</p>
-              <h2 id="window-heading">Working-window finder</h2>
-              <p>Find consecutive forecast hours rated Go or Caution for each activity. Partial edge hours are excluded.</p>
-            </div>
-          </div>
-          <div class="window-controls">
-            <label for="window-date">
-              <span class="field-label">Local forecast date</span>
-              <input id="window-date" type="date" disabled aria-describedby="window-message window-date-error">
-              <span class="input-error" id="window-date-error" hidden></span>
-            </label>
-            <label for="window-start">
-              <span class="field-label">Shift start</span>
-              <input id="window-start" type="time" value="07:00" disabled aria-describedby="window-message window-start-error">
-              <span class="input-error" id="window-start-error" hidden></span>
-            </label>
-            <label for="window-end">
-              <span class="field-label">Shift end</span>
-              <input id="window-end" type="time" value="17:00" disabled aria-describedby="window-message window-end-error">
-              <span class="input-error" id="window-end-error" hidden></span>
-            </label>
-            <label for="window-duration">
-              <span class="field-label">Minimum full hours</span>
-              <input id="window-duration" type="number" min="1" max="12" step="1" value="4" disabled aria-describedby="window-message window-duration-error">
-              <span class="input-error" id="window-duration-error" hidden></span>
-            </label>
-          </div>
-          <p class="window-message" id="window-message" role="status" aria-live="polite">Waiting for forecast data.</p>
-          <div class="window-results" id="window-results" aria-live="polite">
-            <section class="window-result"><h3>Crane Lifts</h3><p class="window-empty">Waiting for forecast data.</p></section>
-            <section class="window-result"><h3>Concrete Pours</h3><p class="window-empty">Waiting for forecast data.</p></section>
-            <section class="window-result"><h3>Roofing</h3><p class="window-empty">Waiting for forecast data.</p></section>
-          </div>
-        </section>
-
-        <section id="handoff-panel" class="panel handoff-panel" aria-labelledby="handoff-heading">
-          <div class="section-heading">
-            <div>
-              <p class="eyebrow">Construction handoff</p>
-              <h2 id="handoff-heading">Shift Handoff Snapshot</h2>
-              <p>Share the selected date's source-attributed forecast details with the next shift.</p>
-            </div>
-          </div>
-          <p id="handoff-notice" class="handoff-notice">The snapshot is a planning aid, not authorization or a safety determination.</p>
-          <div class="handoff-actions">
-            <button id="copy-handoff" type="button" disabled>Copy plain-text snapshot</button>
-            <button id="print-handoff" type="button" disabled>Print / Save PDF</button>
-          </div>
-          <p id="handoff-message" class="handoff-message" role="status" aria-live="polite">Waiting for forecast data.</p>
-          <label class="field-label" for="handoff-text">Plain-text handoff snapshot</label>
-          <textarea id="handoff-text" class="handoff-text" readonly spellcheck="false" aria-describedby="handoff-notice handoff-message">Waiting for forecast data.</textarea>
-        </section>
-        <section class="panel selected-day-panel" aria-labelledby="selected-day-heading">
-          <div class="section-heading selected-day-heading">
-            <div>
-              <p class="eyebrow">Activity details</p>
-              <h2 id="selected-day-heading">Loading selected day</h2>
-              <p id="selected-day-caption">Waiting for forecast data.</p>
-            </div>
-            <span class="micro-pill" id="selected-day-status">Unavailable</span>
-          </div>
-          <div id="activity-details" class="activity-grid" aria-live="polite">
-            <article class="activity-card">
-              <div class="activity-card-top"><h3>Crane Lifts</h3><strong class="status pending">Unavailable</strong></div>
-              <p class="activity-reason">Waiting for the forecast.</p>
-            </article>
-            <article class="activity-card">
-              <div class="activity-card-top"><h3>Concrete Pours</h3><strong class="status pending">Unavailable</strong></div>
-              <p class="activity-reason">Waiting for the forecast.</p>
-            </article>
-            <article class="activity-card">
-              <div class="activity-card-top"><h3>Roofing</h3><strong class="status pending">Unavailable</strong></div>
-              <p class="activity-reason">Waiting for the forecast.</p>
-            </article>
-          </div>
-        </section>
-
-        <section class="panel hourly-panel" aria-labelledby="hourly-heading">
-          <div class="hourly-heading">
-            <h2 id="hourly-heading">Hourly forecast</h2>
-            <p id="hourly-caption">Waiting for forecast data.</p>
-          </div>
-          <div class="table-wrap" id="hourly-table-wrap">
-            <table class="hourly-table">
-              <thead>
-                <tr>
-                  <th scope="col">Local timestamp</th>
-                  <th scope="col">Unix timestamp</th>
-                  <th scope="col">UTC offset</th>
-                  <th scope="col">Sustained wind at 10 m (mph)</th>
-                  <th scope="col">Gust at 10 m (mph)</th>
-                  <th scope="col">Temperature at 2 m (&deg;F)</th>
-                  <th scope="col">Hourly precipitation probability (%)</th>
-                </tr>
-              </thead>
-              <tbody id="hourly-table-body">
-                <tr><td colspan="5">Waiting for forecast data.</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <p class="disclaimer">Planning preview only. Follow approved site plans and safety procedures.</p>
       </div>
     </main>
   </div>
-  <section id="handoff-print" class="handoff-print" aria-label="Printable Shift Handoff Snapshot">
-    <pre id="handoff-print-text"></pre>
-  </section>
+  <section id="handoff-print" class="handoff-print" aria-label="Printable Shift Handoff Snapshot"></section>
   <script>
     (() => {
       const defaultLocation = { lat: 40.2338, lon: -111.6585 };
@@ -1908,9 +2277,18 @@
         windowMessage: document.getElementById("window-message"),
         windowResults: document.getElementById("window-results"),
         handoffText: document.getElementById("handoff-text"),
-        handoffPrintText: document.getElementById("handoff-print-text"),
         handoffNotice: document.getElementById("handoff-notice"),
         handoffMessage: document.getElementById("handoff-message"),
+        handoffDate: document.getElementById("handoff-date"),
+        handoffSite: document.getElementById("handoff-site"),
+        handoffTimezone: document.getElementById("handoff-timezone"),
+        handoffRetrieved: document.getElementById("handoff-retrieved"),
+        handoffActivityGrid: document.getElementById("handoff-activity-grid"),
+        handoffSourceGrid: document.getElementById("handoff-source-grid"),
+        handoffHourlySummary: document.getElementById("handoff-hourly-summary"),
+        handoffHourlyBody: document.getElementById("handoff-hourly-body"),
+        handoffPlainDetails: document.getElementById("handoff-plain-details"),
+        handoffPrintContent: document.getElementById("handoff-print"),
         copyHandoff: document.getElementById("copy-handoff"),
         printHandoff: document.getElementById("print-handoff")
       };
@@ -2736,6 +3114,129 @@
         return lines.join("\n");
       }
 
+      function escapeHandoffHtml(value) {
+        return String(value).replace(/[&<>"']/g, (character) => ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          "\"": "&quot;",
+          "'": "&#39;"
+        })[character]);
+      }
+
+      function renderHandoffActivityCard(name, result, timezone, forPrint = false) {
+        const timestamps = governingTimestampText(result, timezone).replace(/<br\s*\/?>/gi, "\n");
+        return `
+          <article class="handoff-activity-card" data-status="${escapeHandoffHtml(result.status)}">
+            <div class="handoff-activity-top">
+              <h3>${escapeHandoffHtml(name)}</h3>
+              <span class="status ${statusClass(result.status)}">${escapeHandoffHtml(result.status)}</span>
+            </div>
+            <span class="handoff-metric-label">${escapeHandoffHtml(result.metric)}</span>
+            <strong class="handoff-value">${escapeHandoffHtml(governingValueText(result))}</strong>
+            <p class="handoff-time-label">Governing local timestamp(s)</p>
+            <p class="handoff-times">${escapeHandoffHtml(timestamps)}</p>
+            <p class="handoff-thresholds"><strong>Thresholds:</strong> ${escapeHandoffHtml(thresholdText(result))}</p>
+            <details class="handoff-reason"${forPrint ? " open" : ""}>
+              <summary>Why this rating</summary>
+              <p>${escapeHandoffHtml(result.reason)}</p>
+            </details>
+          </article>
+        `;
+      }
+
+      function renderHandoffActivityCards(dailyResults, timezone, forPrint = false) {
+        return [
+          renderHandoffActivityCard("Crane Lifts", dailyResults.crane, timezone, forPrint),
+          renderHandoffActivityCard("Concrete Pours", dailyResults.concrete, timezone, forPrint),
+          renderHandoffActivityCard("Roofing", dailyResults.roofing, timezone, forPrint)
+        ].join("");
+      }
+
+      function renderHandoffSourceFacts(day) {
+        const units = Object.entries(forecastData.hourly_units || {})
+          .map(([field, unit]) => `${field}: ${unit}`)
+          .join("; ");
+        const elevation = Number.isFinite(forecastData.elevation)
+          ? `${forecastData.elevation} m`
+          : "Unavailable (not returned)";
+        const facts = [
+          ["Jobsite", elements.jobsiteHeading.textContent],
+          ["Jobsite coordinates used for the loaded forecast", elements.forecastCoordinates.textContent],
+          ["Forecast response coordinates", `${forecastData.latitude}, ${forecastData.longitude}`],
+          ["Jobsite timezone", day.timezone],
+          ["Forecast retrieved", elements.forecastRetrieved.textContent],
+          ["Exact Open-Meteo request", elements.validationRequest.textContent],
+          ["Returned hourly units", units || "Unavailable"],
+          ["Source elevation", elevation],
+          ["Configured threshold inputs", configuredThresholdText(readThresholdConfig()).join("; ")]
+        ];
+        return facts.map(([label, value]) => {
+          const valueElement = label === "Exact Open-Meteo request" ? "code" : "strong";
+          return `<div class="handoff-fact"><span>${escapeHandoffHtml(label)}</span><${valueElement}>${escapeHandoffHtml(value)}</${valueElement}></div>`;
+        }).join("");
+      }
+
+      function renderHandoffHourlyRows(day) {
+        if (day.samples.length === 0) {
+          return '<tr><td colspan="7">No included hourly samples are available for this date.</td></tr>';
+        }
+        return day.samples.map((sample) => `
+          <tr>
+            <td>${escapeHandoffHtml(formatLocalTimestamp(sample.timestamp, day.timezone))}</td>
+            <td>${escapeHandoffHtml(formatUtcOffset(sample.timestamp, day.timezone))}</td>
+            <td>${Math.round(sample.timestamp / 1000)}</td>
+            <td>${escapeHandoffHtml(snapshotHourlyValue(sample.windSpeed, "mph"))}</td>
+            <td>${escapeHandoffHtml(snapshotHourlyValue(sample.windGust, "mph"))}</td>
+            <td>${escapeHandoffHtml(snapshotHourlyValue(sample.temperature, "°F"))}</td>
+            <td>${escapeHandoffHtml(snapshotHourlyValue(sample.precipitationProbability, "%"))}</td>
+          </tr>
+        `).join("");
+      }
+
+      function renderHandoffPrintView(day, dailyResults) {
+        const hasUnavailableActivity = [dailyResults.crane, dailyResults.concrete, dailyResults.roofing]
+          .some((result) => result.status === "Unavailable");
+        const notice = hasUnavailableActivity
+          ? "One or more activity results are Unavailable. Those results are not successful forecast evidence."
+          : "Each activity result is shown independently; no combined day status is calculated.";
+        return `
+          <header class="handoff-print-header">
+            <p class="eyebrow">Construction handoff</p>
+            <h1>Shift Handoff Snapshot</h1>
+            <p>${escapeHandoffHtml(formatShortDate(day.key))} · ${escapeHandoffHtml(elements.jobsiteHeading.textContent)}</p>
+            <p class="handoff-print-retrieval">Forecast retrieved ${escapeHandoffHtml(elements.forecastRetrieved.textContent)} · ${escapeHandoffHtml(day.timezone)}</p>
+          </header>
+          <p class="handoff-notice">${escapeHandoffHtml(notice)} Planning aid only; not authorization or a safety determination.</p>
+          <section aria-labelledby="handoff-print-activities">
+            <h2 id="handoff-print-activities">Activity results</h2>
+            <div class="handoff-activity-grid">${renderHandoffActivityCards(dailyResults, day.timezone, true)}</div>
+          </section>
+          <section class="handoff-print-details" aria-labelledby="handoff-print-source">
+            <h2 id="handoff-print-source">Location and source details</h2>
+            <div class="handoff-source-grid">${renderHandoffSourceFacts(day)}</div>
+          </section>
+          <section class="handoff-print-details" aria-labelledby="handoff-print-hourly">
+            <h2 id="handoff-print-hourly">Selected-date hourly forecast (${day.samples.length} records)</h2>
+            <div class="table-wrap handoff-table-wrap">
+              <table class="hourly-table">
+                <thead><tr>
+                  <th scope="col">Local timestamp</th>
+                  <th scope="col">UTC offset</th>
+                  <th scope="col">Unix timestamp</th>
+                  <th scope="col">Sustained wind at 10 m (mph)</th>
+                  <th scope="col">Gust at 10 m (mph)</th>
+                  <th scope="col">Temperature at 2 m (°F)</th>
+                  <th scope="col">Hourly precipitation probability (%)</th>
+                </tr></thead>
+                <tbody>${renderHandoffHourlyRows(day)}</tbody>
+              </table>
+            </div>
+          </section>
+          <p class="handoff-print-disclaimer">Planning aid only. Follow approved site plans and safety procedures.</p>
+        `;
+      }
+
       function setHandoffMessage(message, isError = false) {
         elements.handoffMessage.textContent = message;
         elements.handoffMessage.classList.toggle("is-error", isError);
@@ -2751,8 +3252,16 @@
         if (!available) {
           const message = "Snapshot unavailable until forecast data is loaded.";
           elements.handoffNotice.textContent = "The snapshot is a planning aid, not authorization or a safety determination. No current forecast retrieval is available.";
+          elements.handoffDate.textContent = "Unavailable";
+          elements.handoffSite.textContent = "Jobsite unavailable";
+          elements.handoffTimezone.textContent = "Unavailable";
+          elements.handoffRetrieved.textContent = "Not retrieved";
+          elements.handoffActivityGrid.innerHTML = '<p class="handoff-placeholder">Activity results will appear when forecast data is available.</p>';
+          elements.handoffSourceGrid.innerHTML = '<p class="handoff-placeholder">Source details will appear when forecast data is available.</p>';
+          elements.handoffHourlySummary.textContent = "Hourly forecast inputs (unavailable)";
+          elements.handoffHourlyBody.innerHTML = '<tr><td colspan="7">Forecast data is unavailable.</td></tr>';
           elements.handoffText.value = message;
-          elements.handoffPrintText.textContent = message;
+          elements.handoffPrintContent.innerHTML = `<h1>Shift Handoff Snapshot</h1><p>${message}</p>`;
           setHandoffMessage(message);
           return;
         }
@@ -2760,8 +3269,16 @@
         const snapshot = buildHandoffSnapshot(day, dailyResults);
         elements.handoffNotice.textContent =
           `Snapshot reflects a forecast retrieved at ${elements.forecastRetrieved.textContent}. Planning aid only; not authorization or a safety determination.`;
+        elements.handoffDate.textContent = formatShortDate(day.key);
+        elements.handoffSite.textContent = elements.jobsiteHeading.textContent;
+        elements.handoffTimezone.textContent = day.timezone;
+        elements.handoffRetrieved.textContent = elements.forecastRetrieved.textContent;
+        elements.handoffActivityGrid.innerHTML = renderHandoffActivityCards(dailyResults, day.timezone);
+        elements.handoffSourceGrid.innerHTML = renderHandoffSourceFacts(day);
+        elements.handoffHourlySummary.textContent = `Hourly forecast inputs (${day.samples.length} records)`;
+        elements.handoffHourlyBody.innerHTML = renderHandoffHourlyRows(day);
         elements.handoffText.value = snapshot;
-        elements.handoffPrintText.textContent = snapshot;
+        elements.handoffPrintContent.innerHTML = renderHandoffPrintView(day, dailyResults);
         const hasUnavailableActivity = [dailyResults.crane, dailyResults.concrete, dailyResults.roofing]
           .some((result) => result.status === "Unavailable");
         setHandoffMessage(
@@ -2783,6 +3300,7 @@
           await navigator.clipboard.writeText(elements.handoffText.value);
           setHandoffMessage("Plain-text handoff snapshot copied.");
         } catch (error) {
+          elements.handoffPlainDetails.open = true;
           elements.handoffText.focus();
           elements.handoffText.select();
           const detail = error instanceof Error ? error.message : String(error);
